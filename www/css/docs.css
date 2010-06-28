@@ -1,0 +1,37 @@
+.DocSection { font-family:Arial, Helvetica, sans-serif; }
+	h1.DocTitle {  }
+	.DocSection p { margin: 0 0 9px 0; }
+	
+	table.DocDetails { width:95%; background-color: #FFFFFF; border:0 none; }
+		table.DocDetails tr { border-bottom:2px #FFFFFF solid; border-left: 0 none; }
+		table.DocDetails td { padding:3px; border:0 none; }
+		
+		tr.DetailTitle { background-color: #FFD599; font-size:14px; }
+		tr.DetailHeader { background-color: #FFDFB2; font-size:13px; }
+		tr.DetailStandout { font-size:12px; }
+		tr.DetailSimple { background-color: #FFF9F0; font-size:12px; }
+		tr.DetailSimpleAlt { background-color: #FFEED6; font-size:12px; }
+		
+.DocSubsection { font-family:Arial, Helvetica, sans-serif; margin-left: 10px; margin-bottom: 20px; }
+	h2.DocSubsectionTitle {  }
+	.DocSubsection p { margin: 0 0 9px 0; }
+	
+	div.DocLinkback {  }
+	
+
+	.DocSection code, .DocSubsection code { white-space:pre; }
+
+.DocDetails { margin-bottom:20px; }
+	.DocDetails td { vertical-align:top; }
+
+.DocAttributes {  }
+	.DocAttributes td.first { font-weight:bold; text-align:right; width: 170px; }
+	.DocWideLabel td.first { width:300px; }
+
+img.DocInfoIcon { vertical-align:middle; }
+
+.DocLocation { font-weight:bold; }
+.DocLocation.LocationGeneric { font-weight:normal; }
+.LocationCore {  }
+.LocationPlugin {  }
+.LocationProject {  }
