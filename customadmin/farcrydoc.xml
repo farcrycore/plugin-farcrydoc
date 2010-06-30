@@ -10,13 +10,13 @@
 		
 		<subsection mergeType="merge" id="coapi">
 			<menu mergeType="merge" sequence="100" id="developerdocs" label="Documentation">
-				<menuitem mergeType="merge" sequence="10" id="farcrydoctypes" label="Types" link="/admin/customadmin.cfm?module=autodocs/types.cfm&amp;plugin=farcrydoc" />
-				<menuitem mergeType="merge" sequence="20" id="farcrydocrules" label="Rules" link="/admin/customadmin.cfm?module=autodocs/rules.cfm&amp;plugin=farcrydoc" />
-				<menuitem mergeType="merge" sequence="30" id="farcrydoctags" label="Tags" link="/admin/customadmin.cfm?module=autodocs/tags.cfm&amp;plugin=farcrydoc" />
-				<menuitem mergeType="merge" sequence="40" id="farcrydoccomponents" label="Components" link="/admin/customadmin.cfm?module=autodocs/components.cfm&amp;plugin=farcrydoc" />
-				<menuitem mergeType="merge" sequence="40" id="farcrydocformtools" label="Formtools" link="/admin/customadmin.cfm?module=autodocs/formtools.cfm&amp;plugin=farcrydoc" />
-				<menuitem mergeType="merge" sequence="50" id="xmlexport" label="XML Export" link="/admin/customadmin.cfm?module=autodocs/xml.cfm&amp;plugin=farcrydoc" />
-				<menuitem mergeType="merge" sequence="60" id="cfedictionary" label="CFEclipse Dictionary" link="/admin/customadmin.cfm?module=autodocs/cfe.cfm&amp;plugin=farcrydoc" />
+				<menuitem mergeType="merge" sequence="10" id="farcrydoctypes" label="Types" link="/admin/customadmin.cfm?module=autodocs/types.cfm&amp;plugin=farcrydoc&amp;showundocumented=1" />
+				<menuitem mergeType="merge" sequence="20" id="farcrydocrules" label="Rules" link="/admin/customadmin.cfm?module=autodocs/rules.cfm&amp;plugin=farcrydoc&amp;showundocumented=1" />
+				<menuitem mergeType="merge" sequence="30" id="farcrydoctags" label="Tags" link="/admin/customadmin.cfm?module=autodocs/tags.cfm&amp;plugin=farcrydoc&amp;showundocumented=1" />
+				<menuitem mergeType="merge" sequence="40" id="farcrydoccomponents" label="Components" link="/admin/customadmin.cfm?module=autodocs/components.cfm&amp;plugin=farcrydoc&amp;showundocumented=1" />
+				<menuitem mergeType="merge" sequence="40" id="farcrydocformtools" label="Formtools" link="/admin/customadmin.cfm?module=autodocs/formtools.cfm&amp;plugin=farcrydoc&amp;showundocumented=1" />
+				<menuitem mergeType="merge" sequence="50" id="xmlexport" label="XML Export" link="/admin/customadmin.cfm?module=autodocs/xml.cfm&amp;plugin=farcrydoc&amp;showundocumented=1" />
+				<menuitem mergeType="merge" sequence="60" id="cfedictionary" label="CFEclipse Dictionary" link="/admin/customadmin.cfm?module=autodocs/cfe.cfm&amp;plugin=farcrydoc&amp;showundocumented=1" />
 			</menu>
 		</subsection>
 	</section>
