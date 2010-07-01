@@ -12,8 +12,8 @@
 	<cfparam name="url.refreshdocs" default="0" />
 	<cfset stObj = getComponent(url.ref,url.refreshdocs) />
 </cfif>
-
-<doc:section title="#stObj.location#: #stObj.name#">
+<cfdump var="#stObj#">
+<doc:section title="#stObj.location#: #stObj.package#.#stObj.name#">
 	<!--- Deprecation --->
 	<cfif stObj.bDeprecated>
 		<cfoutput><p class="Deprecated">This component is deprecated</p></cfoutput>

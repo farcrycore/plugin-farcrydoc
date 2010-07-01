@@ -143,7 +143,7 @@
 		<cfset var stComponent = structnew() />
 		
 		<cfif not (isdefined("application.fc.autodoc.components.st") and structkeyexists(application.fc.autodoc.components.st,arguments.path)) or arguments.refresh>
-			<cfset qComponents = getComponentQuery() />
+			<cfset qComponents = getComponentQuery(1,arguments.refresh) />
 			<cfquery dbtype="query" name="qComponents">
 				select	*
 				from	qComponents
