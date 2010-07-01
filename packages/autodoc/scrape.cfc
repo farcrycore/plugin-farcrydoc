@@ -137,7 +137,7 @@
 		<cfset stResult.functions = structnew() />
 		<cfif structkeyexists(arguments.stMetadata,"functions")>
 			<cfloop from="1" to="#arraylen(arguments.stMetadata.functions)#" index="i">
-				<cfset functionsource = scrape(source=arguments.source,regex="(<!---.*?--->\s*)*<cffunction[^>]*name=[""|']#arguments.stMetadata.functions[i].name#.*?</cffunction>",regexref=1,default="") />
+				<cfset functionsource = scrape(source=arguments.source,regex="(<!---.*?--->\s*)?<cffunction[^>]*name=[""|']#arguments.stMetadata.functions[i].name#.*?</cffunction>",regexref=1,default="") />
 				<cfset stResult.functions[arguments.stMetadata.functions[i].name] = scrapeFunction(stMetadata=arguments.stMetadata.functions[i],scopelocation=stResult.scopelocation,source=functionsource) />
 			</cfloop>
 		</cfif>
@@ -298,10 +298,10 @@
 		<cfset stResult.bdeprecated = false />
 		
 		<!--- Find all comments that don't immediately follow a tag element (as the attribute comments do) --->
-		<cfset aCommentMatches = scrapeAll(source=arguments.source,regex="\s<\!---.*?--->") />
+		<cfset aCommentMatches = scrapeAll(source=arguments.source,regex="(^|\s)<\!---.*?--->") />
 		<cfloop from="1" to="#arraylen(aCommentMatches)#" index="i">
 			<cfif find("@@",aCommentMatches[i])>
-				<cfset aVarMatches = scrapeAll(source=aCommentMatches[i],regex="@@[^:]+:(.*?)(?:@@|--->)") />
+				<cfset aVarMatches = scrapeAll(source=aCommentMatches[i],regex="@@[^:]+:(.*?)(@@|--->)") />
 				<cfloop from="1" to="#arraylen(aVarMatches)#" index="j">
 					<cfset key = scrape(source=aVarMatches[j],regex="@@([^:]+):",regexref=2) />
 					<cfset stResult[key] = scrape(source=aVarMatches[j],regex="@@[^:]+:(.*?)(?:@@|--->)",regexref=2) />
@@ -501,16 +501,23 @@
 		
 		<cfelseif structkeyexists(arguments,"regex") and len(arguments.regex)><!--- Regex --->
 			
+			<cfset stResult = refindnocase(arguments.regex,arguments.source,1,true) />
+			<cfloop list="#arguments.regexref#" index="thisregexref">
+				<cfif arraylen(stResult.pos) gte thisregexref and stResult.pos[1]>
+					<cfset arrayappend(aReturn,trim(mid(arguments.source,stResult.pos[thisregexref],stResult.len[thisregexref]))) />
+				</cfif>
+			</cfloop>
+			<!--- 
 			<cfset pattern = CreateObject("java","java.util.regex.Pattern").Compile(JavaCast("string",arguments.regex)) />
 			<cfset matcher = pattern.Matcher(JavaCast("string",arguments.source)) />
 			<cfif matcher.Find()>
 				<cfloop list="#arguments.regexref#" index="thisregexref">
-					<cfif matcher.GroupCount()+1 gte thisregexref>
+					<cfif matcher.GroupCount() gte int(thisregexref)>
 						<cfset arrayappend(aReturn,trim(Matcher.Group( int(thisregexref) ) )) />
 					</cfif>
 				</cfloop>
 			</cfif>
-			
+			 --->
 			<cfif listlen(arguments.regexref) eq 1 and arraylen(aReturn)>
 				<cfreturn aReturn[1] />
 			<cfelseif arraylen(aReturn)>

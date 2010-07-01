@@ -12,7 +12,7 @@
 	<cfparam name="url.refreshdocs" default="0" />
 	<cfset stObj = getComponent(url.ref,url.refreshdocs) />
 </cfif>
-<cfdump var="#stObj#">
+
 <doc:section title="#stObj.location#: #stObj.package#.#stObj.name#">
 	<!--- Deprecation --->
 	<cfif stObj.bDeprecated>
