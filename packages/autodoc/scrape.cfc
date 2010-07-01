@@ -1,5 +1,6 @@
 <cfcomponent displayname="Scrape" hint="Provides functions for scraping tag, function and scope data from code" output="false">
-
+	
+	
 	<cffunction name="scrapeScopes" access="public" returntype="array" description="Returns an array of scopes" output="false">
 		<cfargument name="scopefile" type="String" required="true" hint="The name of the file that contains the scope definitions" />
 		
@@ -51,7 +52,7 @@
 		<cfset var package = "" />
 		<cfset var stPackage = structnew() />
 		<cfset var key = "" />
-				
+		
 		<cfset arguments.folderpath = expandpath(arguments.folderpath) />		
 		<cfdirectory action="list" directory="#arguments.folderpath#" recurse="true" filter="*.cfc" name="qResult" />
 		
@@ -136,7 +137,7 @@
 		<cfset stResult.functions = structnew() />
 		<cfif structkeyexists(arguments.stMetadata,"functions")>
 			<cfloop from="1" to="#arraylen(arguments.stMetadata.functions)#" index="i">
-				<cfset functionsource = scrape(source=arguments.source,regex="(<!---.*?--->\s*)?<cffunction[^>]*name=[""|']#arguments.stMetadata.functions[i].name#.*?</cffunction>",regexref=1,default="") />
+				<cfset functionsource = scrape(source=arguments.source,regex="(<!---.*?--->\s*)*<cffunction[^>]*name=[""|']#arguments.stMetadata.functions[i].name#.*?</cffunction>",regexref=1,default="") />
 				<cfset stResult.functions[arguments.stMetadata.functions[i].name] = scrapeFunction(stMetadata=arguments.stMetadata.functions[i],scopelocation=stResult.scopelocation,source=functionsource) />
 			</cfloop>
 		</cfif>
@@ -468,6 +469,8 @@
 		<cfset var stResult = structnew() /><!--- Regex match result --->
 		<cfset var thisregexref = "" /><!--- Loop variable for arguments.regexref --->
 		<cfset var aReturn = arraynew(1) /><!--- Returnable result --->
+		<cfset var pattern = "" /><!--- Java regex pattern --->
+		<cfset var matcher = "" /><!--- Java regex matcher --->
 		
 		<cfif structkeyexists(arguments,"open") and len(arguments.open) and structkeyexists(arguments,"close")><!--- Open and closing strings --->
 			
@@ -498,12 +501,15 @@
 		
 		<cfelseif structkeyexists(arguments,"regex") and len(arguments.regex)><!--- Regex --->
 			
-			<cfset stResult = refindnocase(arguments.regex,arguments.source,1,true) />
-			<cfloop list="#arguments.regexref#" index="thisregexref">
-				<cfif arraylen(stResult.pos) gte thisregexref and stResult.pos[1]>
-					<cfset arrayappend(aReturn,trim(mid(arguments.source,stResult.pos[thisregexref],stResult.len[thisregexref]))) />
-				</cfif>
-			</cfloop>
+			<cfset pattern = CreateObject("java","java.util.regex.Pattern").Compile(JavaCast("string",arguments.regex)) />
+			<cfset matcher = pattern.Matcher(JavaCast("string",arguments.source)) />
+			<cfif matcher.Find()>
+				<cfloop list="#arguments.regexref#" index="thisregexref">
+					<cfif matcher.GroupCount()+1 gte thisregexref>
+						<cfset arrayappend(aReturn,trim(Matcher.Group( int(thisregexref) ) )) />
+					</cfif>
+				</cfloop>
+			</cfif>
 			
 			<cfif listlen(arguments.regexref) eq 1 and arraylen(aReturn)>
 				<cfreturn aReturn[1] />
@@ -591,5 +597,5 @@
 		
 		<cfreturn aResult />
 	</cffunction>
-
+	
 </cfcomponent>

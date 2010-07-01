@@ -4,19 +4,12 @@
 <cfimport taglib="/farcry/core/tags/webskin" prefix="skin" />
 <cfimport taglib="../../tags" prefix="doc" />
 
-<cfif (stObj.typename neq "docComponent" or not len(stObj.name)) and len(url.ref)>
-	<cfset stObj = getComponent(url.ref) />
+<cfif (stObj.typename neq "docComponent" or not len(stObj.name)) and isdefined("url.ref") and len(url.ref)>
+	<cfparam name="url.refreshdocs" default="0" />
+	<cfset stObj = getComponent(url.ref,url.refreshdocs) />
 </cfif>
 
 <doc:xml />
-
-<cfif not structKeyExists(stObj,"bDocument")>
-	<cfset stObj.bDocument = false />
-</cfif>
-
-<cfif not structKeyExists(stObj,"bDeprecated")>
-	<cfset stObj.bDeprecated = false />
-</cfif>
 
 <cfoutput>
 	<component name="#stObj.name#" hint="#xmlformat(stObj.hint)#" packagepath="#stObj.packagepath#" scopelocation="#stObj.scopelocation#" bDocument="#stObj.bDocument#" bDeprecated="#stObj.bDeprecated#">

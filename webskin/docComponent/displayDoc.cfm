@@ -8,8 +8,9 @@
 	<skin:htmlHead id="farcrydocs"><cfoutput><style type="text/css"><cfinclude template="../../www/css/docs.css" /></style></cfoutput></skin:htmlHead>
 </cfif>
 
-<cfif (stObj.typename neq "docComponent" or not len(stObj.name)) and len(url.ref)>
-	<cfset stObj = getComponent(url.ref) />
+<cfif (stObj.typename neq "docComponent" or not len(stObj.name)) and isdefined("url.ref") and len(url.ref)>
+	<cfparam name="url.refreshdocs" default="0" />
+	<cfset stObj = getComponent(url.ref,url.refreshdocs) />
 </cfif>
 
 <doc:section title="#stObj.location#: #stObj.name#">

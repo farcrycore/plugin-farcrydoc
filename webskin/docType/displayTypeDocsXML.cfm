@@ -5,7 +5,6 @@
 <cfimport taglib="../../tags" prefix="doc" />
 
 <cfparam name="url.refreshdocs" default="0" />
-<cfparam name="url.ref" default="" />
 
 <!--- Always include undocumented stuff in the XML --->
 <cfset qTypes = getTypeQuery(1,url.refreshdocs) />
