@@ -8,7 +8,7 @@
 				ftType="list" ftListData="getLocations" ftSelectMultiple="true"
 				hint="The locations that webskins should be drawn from" />
 	<cfproperty ftSeq="3" ftFieldSet="General" ftWizardStep="FarCry Docs"
-				name="css" type="boolean" ftDefault="1" ftLabel="Default CSS"
+				name="css" type="boolean" default="1" ftDefault="1" ftLabel="Default CSS"
 				ftType="boolean"
 				hint="Should the plugin CSS be included in documentation pages" />
 	
