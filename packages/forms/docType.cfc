@@ -457,7 +457,7 @@
 		<cfset var stAll = structnew() />
 		<cfset var qResult = querynew("empty") />
 		
-		<cfif not isdefined("application.fc.autodoc.types") or arguments.refresh>
+		<cfif not isdefined("application.fc.autodoc.types.q") or arguments.refresh>
 			<cfparam name="application.fc.autodoc" default="#structnew()#" />
 			<cfset application.fc.autodoc.types = structnew() />
 			<cfset application.fc.autodoc.types.q = generateTypeQuery() />
@@ -486,6 +486,50 @@
 		</cfif>
 		
 		<cfreturn duplicate(application.fc.autodoc.types.st[arguments.typename]) />
+	</cffunction>
+	
+	
+	<cffunction name="getMissingFiles" returntype="query" access="public" output="false" hint="Returns missing files for the specified property">
+		<cfargument name="typename" type="string" required="true" hint="The type to retrieve" />
+		<cfargument name="property" type="string" required="true" hint="The property to check" />
+		
+		<cfset var stType = getType(arguments.typename) />
+		<cfset var qFiles = querynew("filename","varchar") />
+		<cfset var o = createobject("component",stType.packagepath) />
+		<cfset var stLocation = structnew() />
+		<cfset var qCheck = "" />
+		<cfset var stArgs = structnew() />
+		<cfset var stObj = structnew() />
+		<cfset var thiscol = "" />
+		
+		<cfset stArgs.typename = arguments.typename />
+		<cfset stArgs.lProperties = structkeylist(application.stCOAPI[arguments.typename].stProps) />
+		<cfset stArgs["#arguments.property#_neq"] = "" />
+		<cfset stArgs.status = "draft,pending,approved" />
+		<cfset qCheck = application.fapi.getContentObjects(argumentCollection=stArgs) />
+		
+		<cfif application.stCOAPI[arguments.typename].stProps[arguments.property].metadata.ftType eq "file">
+			<cfloop query="qCheck">
+				<cfset stObj = structnew() />
+				<cfloop list="#qCheck.columnlist#" index="thiscol">
+					<cfset stObj[thiscol] = qCheck[thiscol][qCheck.currentrow] />
+				</cfloop>
+				<cfset stLocation = o.getFileLocation(stObject=stObj,fieldname=arguments.property) />
+				<cfif structkeyexists(stLocation,"message") and stLocation.message eq "File is missing">
+					<cfset queryaddrow(qFiles) />
+					<cfset querysetcell(qFiles,"filename",stObj[arguments.property]) />
+				</cfif>
+			</cfloop>
+		<cfelse>
+			<cfloop query="qCheck">
+				<cfif not fileexists("#application.path.imageroot##qCheck[arguments.property][qCheck.currentrow]#")>
+					<cfset queryaddrow(qFiles) />
+					<cfset querysetcell(qFiles,"filename",stObj[arguments.property]) />
+				</cfif>
+			</cfloop>
+		</cfif>
+		
+		<cfreturn qFiles />
 	</cffunction>
 	
 </cfcomponent>

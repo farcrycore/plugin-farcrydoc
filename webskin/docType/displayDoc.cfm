@@ -5,9 +5,9 @@
 <cfimport taglib="../../tags" prefix="doc" />
 
 <cfif not structkeyexists(arguments.stParam,"parts") and isdefined("application.config.docs.typesections") and len(application.config.docs.typesections)>
-	<cfset arguments.stParam.parts = application.fapi.listIntersection('displayDocSummary,displayDocPropertySummary,displayDocFileLocations,displayDocJoins,displayDocWebskins,displayDocSecurity,displayDocPropertyDetails',application.config.docs.typesections) />
+	<cfset arguments.stParam.parts = application.fapi.listIntersection('displayDocSummary,displayDocPropertySummary,displayDocFileLocations,displayDocMissingFiles,displayDocJoins,displayDocWebskins,displayDocSecurity,displayDocPropertyDetails',application.config.docs.typesections) />
 <cfelseif not structkeyexists(arguments.stParam,"parts")>
-	<cfset arguments.stParam.parts = 'displayDocSummary,displayDocPropertySummary,displayDocFileLocations,displayDocJoins,displayDocWebskins,displayDocSecurity,displayDocPropertyDetails' />
+	<cfset arguments.stParam.parts = 'displayDocSummary,displayDocPropertySummary,displayDocFileLocations,displayDocMissingFiles,displayDocJoins,displayDocWebskins,displayDocSecurity,displayDocPropertyDetails' />
 </cfif>
 
 <doc:css />

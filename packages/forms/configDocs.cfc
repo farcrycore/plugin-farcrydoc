@@ -13,8 +13,8 @@
 				hint="Should the plugin CSS be included in documentation pages" />
 	
 	<cfproperty ftSeq="11" ftFieldSet="Types" ftWizardStep="FarCry Docs"
-				name="typesections" type="longchar" ftDefault="displayDocSummary,displayDocPropertySummary,displayDocFileLocations,displayDocJoins,displayDocWebskins,displayDocSecurity,displayDocPropertyDetails" ftLabel="Sections"
-				ftType="list" ftSelectMultiple="true" ftList="displayDocSummary,displayDocPropertySummary,displayDocFileLocations,displayDocJoins,displayDocWebskins,displayDocSecurity,displayDocPropertyDetails"
+				name="typesections" type="longchar" ftDefault="displayDocSummary,displayDocPropertySummary,displayDocMissingFiles,displayDocJoins,displayDocWebskins,displayDocSecurity,displayDocPropertyDetails" ftLabel="Sections"
+				ftType="list" ftSelectMultiple="true" ftList="displayDocSummary,displayDocPropertySummary,displayDocFileLocations,displayDocMissingFiles,displayDocJoins,displayDocWebskins,displayDocSecurity,displayDocPropertyDetails"
 				hint="The documentation sections that are displayed in type documentation" />
 	<cfproperty ftSeq="12" ftFieldSet="Types" ftWizardStep="FarCry Docs"
 				name="typewebskins" type="longchar" ftDefault="!displayDoc.*#chr(13)##chr(10)#!displayTypeDoc.*" ftLabel="Webskin filter"
