@@ -4,7 +4,7 @@
 <cfimport taglib="/farcry/core/tags/webskin" prefix="skin" />
 <cfimport taglib="../../tags" prefix="doc" />
 
-<cfset arguments.stParam.parts = 'displayDocSummary,displayDocProperties' />
+<cfset arguments.stParam.parts = 'displayDocSummary,displayDocExamples,displayDocProperties' />
 
 <doc:css />
 

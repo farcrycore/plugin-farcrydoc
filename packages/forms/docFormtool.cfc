@@ -5,6 +5,7 @@
 	<cfproperty name="packagepath" type="string" />
 	<cfproperty name="hint" type="string" />
 	<cfproperty name="description" type="string" />
+	<cfproperty name="examples" type="string" />
 	<cfproperty name="aExtends" type="array" />
 	<cfproperty name="aProperties" type="array" />
 	
@@ -66,6 +67,10 @@
 		<cfset var stType = structnew() />
 		<cfset var stProps = structnew() />
 		<cfset var thistool = "" />
+		<cfset var oScrape = createobject("component","farcry.plugins.farcrydoc.packages.autodoc.scrape") />
+		<cfset var stMetadata = structnew() />
+		<cfset var source = "" />
+		<cfset var stInfo = structnew() />
 		
 		<cfset stResult.q = querynew("typename,displayname,bDocument","varchar,varchar,bit") />
 		<cfset stResult.st = structnew() />
@@ -110,7 +115,7 @@
 				
 				<cfset stType = structnew() />
 				<cfset stType.objectid = createuuid() />
-				<cfset stType.typename = "docType" />
+				<cfset stType.typename = "docFormtool" />
 				
 				<cfset stType.name = thistool />
 				<cfset stType.bDocument = iif(structkeyexists(application.formtools[thistool],"bDocument"),"application.formtools[thistool].bDocument","0") />
@@ -122,13 +127,20 @@
 				<cfset stType.description = iif(structkeyexists(application.formtools[thistool],"description"),"application.formtools[thistool].description",de("")) />
 				
 				<!--- Extends --->
-				<cfset stType.aExtends = getExtends(getMetadata(createobject("component",application.formtools[thistool].packagepath))) />
+				<cfset stMetadata = getMetadata(createobject("component",application.formtools[thistool].packagepath)) />
+				<cfset stType.aExtends = getExtends(stMetadata) />
 				
 				<!--- Properties --->
 				<cfset stType.aProperties = getPropertyDetails(stProps) />
 				
 				<!--- Warnings --->
 				<cfset stType.aWarnings = getWarnings(stType) />
+				
+				<!--- Scrape comment variables --->
+				<cffile action="read" file="#expandpath('/' & replace(application.formtools[thistool].packagepath,'.','/','ALL') & '.cfc')#" variable="source" />
+				<cfset structappend(stType,oScrape.scrapeCommentVariables(source=source,escapeCode=true,debug=stType.name eq "array"),true) />
+				
+				<cfparam name="stType.examples" default="" />
 				
 				<cfset stResult.st[thistool] = stType />
 			</cfif>

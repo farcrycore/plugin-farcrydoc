@@ -19,6 +19,12 @@
 		<cfoutput><p>#stObj.hint#"</p></cfoutput>
 	</cfif>
 	
+	<cfif len(stObj.examples)>
+		<doc:subsection title="Examples">
+			<cfoutput>#stObj.examples#</cfoutput>
+		</doc:subsection>
+	</cfif>
+	
 	<doc:details properties="2" class="DocAttributes">
 		<doc:item type="simple" v1="Library" v2="#stObj.library#" />
 		<doc:item type="simple" v1="Prefix" v2="#stObj.prefix#" />
@@ -41,12 +47,6 @@
 			</cfif>
 		</doc:details>
 	</doc:subsection>
-	
-	<cfif len(stObj.examples)>
-		<doc:subsection title="Examples">
-			<cfoutput>#stObj.examples#</cfoutput>
-		</doc:subsection>
-	</cfif>
 	
 </doc:section>
 

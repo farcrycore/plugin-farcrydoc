@@ -1,6 +1,8 @@
 <cfcomponent displayname="Scrape" hint="Provides functions for scraping tag, function and scope data from code" output="false">
 	
-	
+	<cfset variables.newline = "
+" />
+
 	<cffunction name="scrapeScopes" access="public" returntype="array" description="Returns an array of scopes" output="false">
 		<cfargument name="scopefile" type="String" required="true" hint="The name of the file that contains the scope definitions" />
 		
@@ -179,20 +181,7 @@
 		<cfparam name="stResult.bDeprecated" default="false" />
 		
 		<!--- Find all comments that don't immediately follow a tag element (as the attribute comments do) --->
-		<cfset aCommentMatches = scrapeAll(source=arguments.source,regex="\s<\!---.*?--->") />
-		<cfloop from="1" to="#arraylen(aCommentMatches)#" index="i">
-			<cfif find("@@",aCommentMatches[i])>
-				<cfset aVarMatches = scrapeAll(source=aCommentMatches[i],regex="@@[^:]+:(.*?)(?:@@|--->)") />
-				<cfloop from="1" to="#arraylen(aVarMatches)#" index="j">
-					<cfset key = scrape(source=aVarMatches[j],regex="@@([^:]+):",regexref=2) />
-					<cfset stResult[key] = scrape(source=aVarMatches[j],regex="@@[^:]+:(.*?)(?:@@|--->)",regexref=2) />
-					<cfset aCode = scrapeAll(source=stResult[key],regex="<code>(.*?)</code>",regexref=2) />
-					<cfloop from="1" to="#arraylen(aCode)#" index="k">
-						<cfset stResult[key] = replace(stResult[key],aCode[k],htmleditformat(aCode[k])) />
-					</cfloop>
-				</cfloop>
-			</cfif>
-		</cfloop>
+		<cfset structappend(stResult,scrapeCommentVariables(source=arguments.source,escapeCode=true),true) />
 		
 		<!--- Arguments --->
 		<cfset stResult.arguments = arraynew(1) />
@@ -349,18 +338,7 @@
 		<cfset stResult.required = (len(scrape(source=arguments.source,regex="default=('|"").*?\1(?!\1)",regexref=1,default=false)) eq 0) />
 		
 		<!--- Comment variables --->
-		<cfif find("@",arguments.source)>
-			<cfset aMatches = scrapeAll(source=arguments.source,regex="@@[^:]+: (.*?) (?:@@|--->)") />
-			<cfloop from="1" to="#arraylen(aMatches)#" index="i">
-				<cfset stResult[scrape(source=aMatches[i],regex="@@([^:]+):",regexref=2)] = scrape(source=aMatches[i],regex="@@[^:]+: (.*?) (?:@@|--->)",regexref=2) />
-			</cfloop>
-			
-			<cfif structkeyexists(stResult,"attrhint")>
-				<cfset stResult.hint = stResult.attrhint />
-			</cfif>
-		<cfelse>
-			<cfset stResult.hint = scrape(source=arguments.source,regex="<!--- (.*) --->",regexref=2,default="") />
-		</cfif>
+		<cfset structappend(stResult,scrapeCommentVariables(source=source,remap="attrhint:hint,_:hint"),true) />
 		
 		<cfreturn stResult />
 	</cffunction>
@@ -434,6 +412,81 @@
 		<cfreturn stResult />
 	</cffunction>
 
+	<cffunction name="scrapeCommentVariables" access="public" returntype="struct" description="Scrapes all comment variables from the provided string" output="false">
+		<cfargument name="source" type="String" required="true" hint="The cfparam string" />
+		<cfargument name="remap" type="string" required="false" default="" hint="Remaps variables to new names. Use '_' to indicate the contents of a comment without variable names - converted to array if more than one." />
+		<cfargument name="escapeCode" type="boolean" required="false" default="false" hint="Find and escape <code> sections" />
+		
+		<cfset var stResult = structnew() />
+		<cfset var stRemap = structnew() />
+		<cfset var thismap = "" />
+		<cfset var varName = "" />
+		<cfset var varVal = "" />
+		<cfset var aCode = arraynew(1) />
+		<cfset var k = 0 />
+		
+		<cfloop list="#arguments.remap#" index="thismap">
+			<cfset stRemap[listfirst(thismap,":")] = listlast(thismap,":") />
+		</cfloop>
+		
+		<!--- Comment variables --->
+		<cfif find("@@",arguments.source)>
+			<cfset aMatches = scrapeAll(source=arguments.source,regex="@@[^:]+:(.*?)(?:@@|--->)") />
+			<cfloop from="1" to="#arraylen(aMatches)#" index="i">
+				<!--- Get variable name and value --->
+				<cfset varName = scrape(source=aMatches[i],regex="@@([^:]+):",regexref=2) />
+				<cfset varVal = scrape(source=aMatches[i],regex="@@[^:]+:(.*?)(?:@@|--->)",regexref=2) />
+				
+				<!--- Find and escape <code> sections --->
+				<cfif arguments.escapeCode>
+					<cfset aCode = scrapeAll(source=varVal,regex="<code>(.*?)</code>",regexref=2,trim=false) />
+					<cfloop from="1" to="#arraylen(aCode)#" index="k">
+						<cfset varVal = replace(varVal,aCode[k],cleanCode(code=aCode[k],debug=arguments.debug)) />
+					</cfloop>
+				</cfif>
+				
+				<cfif structkeyexists(stRemap,varName)>
+					<cfset stResult[stRemap[varName]] = varVal />
+				<cfelse>
+					<cfset stResult[varName] = varVal />
+				</cfif>
+			</cfloop>
+		<cfelseif structkeyexists(stRemap,"_")>
+			<cfset stResult[stRemap["_"]] = scrape(source=arguments.source,regex="<!--- (.*) --->",regexref=2,default="") />
+		</cfif>
+		
+		<cfreturn stResult />
+	</cffunction>
+	
+	<cffunction name="cleanCode" access="public" returntype="string" description="Cleans up code snippets">
+		<cfargument name="code" type="string" required="true" hint="The code to clean (without any <code> tags)" />
+		
+		<cfset var newVal = "" />
+		<cfset var bestWhitespace = 100 />
+		<cfset var thisWhitespace = 0 />
+		<cfset var thisline = "" />
+		<cfset var thischar = 0 />
+		
+		<cfset arguments.code = replace(htmleditformat(arguments.code),chr(9),"    ","ALL") />
+		
+		<cfloop list="#arguments.code#" index="thisline" delimiters="#chr(10)##chr(13)#">
+			<cfif len(trim(thisline))>
+				<cfset thisWhitespace = len(scrape(source=thisline,regex="^\s+",trim=false)) />
+				<cfset bestWhitespace = min(thisWhitespace,bestWhitespace) />
+			</cfif>
+		</cfloop>
+		
+		<cfloop list="#arguments.code#" index="thisline" delimiters="#chr(10)##chr(13)#">
+			<cfif len(trim(thisline))>
+				<cfset newVal = newVal & rereplace(thisline,"^#repeatstring(" ",bestWhitespace)#","") & variables.newline />
+			<cfelse>
+				<cfset newVal = newVal & variables.newline />
+			</cfif>
+		</cfloop>
+		
+		<cfreturn newVal />
+	</cffunction>
+	
 	<cffunction name="getPrefix" access="public" returntype="String" description="Returns the standard prefix for a library">
 		<cfargument name="library" type="String" required="true" hint="The library to convert" />
 		<cfargument name="stPrefixes" type="struct" required="true" hint="Folder name to prefix mappings" default="#structnew()#" />
@@ -461,6 +514,7 @@
 		<cfargument name="open" type="String" required="false" hint="The opening string" />
 		<cfargument name="close" type="any" required="false" hint="The closing string, or array of strings" />
 		<cfargument name="default" type="String" required="false" default="" hint="The default value" />
+		<cfargument name="trim" type="boolean" required="false" default="true" hint="Should the result be trimmed" />
 		
 		<cfset var start = 0 /><!--- Position of start of matched string --->
 		<cfset var end = 0 /><!--- Position of end of matched string --->
@@ -496,7 +550,11 @@
 					<cfset end = len(arguments.source) />
 				</cfif>
 				
-				<cfreturn trim(mid(arguments.source,start+len(arguments.open),end-start-len(arguments.open))) />
+				<cfif arguments.trim>
+					<cfreturn trim(mid(arguments.source,start+len(arguments.open),end-start-len(arguments.open))) />
+				<cfelse>
+					<cfreturn mid(arguments.source,start+len(arguments.open),end-start-len(arguments.open)) />
+				</cfif>
 			</cfif>
 		
 		<cfelseif structkeyexists(arguments,"regex") and len(arguments.regex)><!--- Regex --->
@@ -504,20 +562,14 @@
 			<cfset stResult = refindnocase(arguments.regex,arguments.source,1,true) />
 			<cfloop list="#arguments.regexref#" index="thisregexref">
 				<cfif arraylen(stResult.pos) gte thisregexref and stResult.pos[1]>
-					<cfset arrayappend(aReturn,trim(mid(arguments.source,stResult.pos[thisregexref],stResult.len[thisregexref]))) />
+					<cfif arguments.trim>
+						<cfset arrayappend(aReturn,trim(mid(arguments.source,stResult.pos[thisregexref],stResult.len[thisregexref]))) />
+					<cfelse>
+						<cfset arrayappend(aReturn,mid(arguments.source,stResult.pos[thisregexref],stResult.len[thisregexref])) />
+					</cfif>
 				</cfif>
 			</cfloop>
-			<!--- 
-			<cfset pattern = CreateObject("java","java.util.regex.Pattern").Compile(JavaCast("string",arguments.regex)) />
-			<cfset matcher = pattern.Matcher(JavaCast("string",arguments.source)) />
-			<cfif matcher.Find()>
-				<cfloop list="#arguments.regexref#" index="thisregexref">
-					<cfif matcher.GroupCount() gte int(thisregexref)>
-						<cfset arrayappend(aReturn,trim(Matcher.Group( int(thisregexref) ) )) />
-					</cfif>
-				</cfloop>
-			</cfif>
-			 --->
+			
 			<cfif listlen(arguments.regexref) eq 1 and arraylen(aReturn)>
 				<cfreturn aReturn[1] />
 			<cfelseif arraylen(aReturn)>
@@ -535,6 +587,7 @@
 		<cfargument name="regexref" type="numeric" required="false" default="1" hint="The regular expression that identifies the string to find" />
 		<cfargument name="open" type="String" required="false" hint="The opening string" />
 		<cfargument name="close" type="any" required="false" hint="The closing string, or array of strings" />
+		<cfargument name="trim" type="boolean" required="false" default="true" hint="Should the result be trimmed" />
 		
 		<cfset var start = -1 /><!--- Position of start of matched string --->
 		<cfset var end = 0 /><!--- Position of end of matched string --->
@@ -576,7 +629,11 @@
 					
 					<cfset start = end />
 					
-					<cfset arrayappend(aResult,trim(mid(arguments.source,start+len(arguments.open),end-start-len(arguments.open)))) />
+					<cfif arguments.trim>
+						<cfset arrayappend(aResult,trim(mid(arguments.source,start+len(arguments.open),end-start-len(arguments.open)))) />
+					<cfelse>
+						<cfset arrayappend(aResult,mid(arguments.source,start+len(arguments.open),end-start-len(arguments.open))) />
+					</cfif>
 				<cfelse>
 				
 					<cfbreak />
@@ -595,7 +652,11 @@
 				</cfif>
 				
 				<cfif arraylen(stResult.pos) gte arguments.regexref and stResult.pos[1]>
-					<cfset arrayappend(aResult,trim(mid(arguments.source,stResult.pos[arguments.regexref],stResult.len[arguments.regexref]))) />
+					<cfif arguments.trim>
+						<cfset arrayappend(aResult,trim(mid(arguments.source,stResult.pos[arguments.regexref],stResult.len[arguments.regexref]))) />
+					<cfelse>
+						<cfset arrayappend(aResult,mid(arguments.source,stResult.pos[arguments.regexref],stResult.len[arguments.regexref])) />
+					</cfif>
 				</cfif>
 				
 			</cfloop>

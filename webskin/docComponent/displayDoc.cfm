@@ -40,6 +40,13 @@
 				<cfoutput><p>#stObj.functions[thisfunction].hint#</p></cfoutput>
 			</cfif>
 			
+			<cfif len(stObj.functions[thisfunction].examples)>
+				<cfoutput>
+					<h4>Examples</h4>
+					#stObj.functions[thisfunction].examples#
+				</cfoutput>
+			</cfif>
+			
 			<doc:details properties="2" class="DocAttributes">
 				<doc:item type="header" v1="Argument" v2="Type" v3="Required" v4="Default" v5="Options" v6="Hint" />
 				
@@ -57,12 +64,6 @@
 				</cfif>
 			</doc:details>
 			
-			<cfif len(stObj.functions[thisfunction].examples)>
-				<cfoutput>
-					<h4>Examples</h4>
-					#stObj.functions[thisfunction].examples#
-				</cfoutput>
-			</cfif>
 		</doc:subsection>
 		
 	</cfloop>

@@ -14,6 +14,7 @@
 <cfoutput>
 	<type name="#stObj.name#" bDocument="#stObj.bDocument#" bDeprecated="#stObj.bDeprecated#" packagepath="#stObj.packagepath#">
 		<description><![CDATA[ #stObj.description# ]]></description>
+		<examples><![CDATA[ #stObj.examples# ]]></examples>
 		<extends><cfloop from="1" to="#arraylen(stObj.aExtends)#" index="i">
 			<packagepath>#stObj.aExtends[i]#</packagepath></cfloop>
 		</extends></cfoutput>
