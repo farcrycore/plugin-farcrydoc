@@ -6,12 +6,9 @@
 <cfparam name="attributes.force" default="false" />
 
 <cfif thistag.ExecutionMode eq "start" and not isdefined("application.config.docs.css") or application.config.docs.css>
-	<cfif request.mode.ajax and (attributes.force or not structkeyexists(request,"outputeddoccss"))>
-		<cfset request.outputeddoccss = true />
-		<cfoutput><style type="text/css"><cfinclude template="../www/css/docs.css" /></style></cfoutput>
-	<cfelseif not request.mode.ajax>
-		<skin:htmlHead id="farcrydocs"><cfoutput><style type="text/css"><cfinclude template="../www/css/docs.css" /></style></cfoutput></skin:htmlHead>
-	</cfif>
+	<skin:loadCSS id="farcrydoc" />
+	<skin:loadJS id="jquery" />
+	<skin:loadJS id="farcrydoc" />
 </cfif>
 
 <cfsetting enablecfoutputonly="false" />

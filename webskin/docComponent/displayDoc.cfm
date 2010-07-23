@@ -43,7 +43,7 @@
 			<cfif len(stObj.functions[thisfunction].examples)>
 				<cfoutput>
 					<h4>Examples</h4>
-					#stObj.functions[thisfunction].examples#
+					#replacelist(stObj.functions[thisfunction].examples,"<code>,</code>","<pre class='brush: coldfusion'>,</pre>")#
 				</cfoutput>
 			</cfif>
 			
