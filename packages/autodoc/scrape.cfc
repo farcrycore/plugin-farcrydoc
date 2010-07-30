@@ -449,6 +449,9 @@
 					<cfloop from="1" to="#arraylen(aCode)#" index="k">
 						<cfset varVal = replace(varVal,aCode[k],cleanCode(code=aCode[k])) />
 					</cfloop>
+					
+					<!--- Convert to highlightable pre --->
+					<cfset varVal = replacelist(varVal,"<code>,</code>","<pre class='brush: coldfusion'>,</pre>") />
 				</cfif>
 				
 				<cfif structkeyexists(stRemap,varName)>
