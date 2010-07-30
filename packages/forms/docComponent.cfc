@@ -33,7 +33,7 @@
 					<cfdirectory action="list" directory="#application.path.core#/packages/#qPackages.name#" recurse="false" filter="*.cfc" name="qComponents" />
 					<cfloop query="qComponents">
 						<cfset st = getMetadata(createobject("component","farcry.core.packages.#qPackages.name[qPackages.currentrow]#.#listfirst(qComponents.name[qComponents.currentrow],".")#")) />
-						<cfparam name="st.bDocument" default="false" />
+						<cfparam name="st.bDocument" default="true" />
 						<cfset queryaddrow(q) />
 						<cfset querysetcell(q,"path","farcry.core.packages.#qPackages.name[qPackages.currentrow]#.#listfirst(qComponents.name[qComponents.currentrow],".")#") />
 						<cfset querysetcell(q,"location","core") />
@@ -55,6 +55,8 @@
 					<cfif qPackages.type eq "Dir">
 						<cfdirectory action="list" directory="#application.path.plugins#/#thisplugin#/packages/#qPackages.name#" recurse="false" filter="*.cfc" name="qComponents" />
 						<cfloop query="qComponents">
+							<cfset st = getMetadata(createobject("component","farcry.plugins.#thisplugin#.packages.#qPackages.name[qPackages.currentrow]#.#listfirst(qComponents.name[qComponents.currentrow],".")#")) />
+							<cfparam name="st.bDocument" default="true" />
 							<cfset queryaddrow(q) />
 							<cfset querysetcell(q,"path","farcry.plugins.#thisplugin#.packages.#qPackages.name[qPackages.currentrow]#.#listfirst(qComponents.name[qComponents.currentrow],".")#") />
 							<cfset querysetcell(q,"location",thisplugin) />
@@ -62,6 +64,7 @@
 							<cfset querysetcell(q,"package",qPackages.name[qPackages.currentrow]) />
 							<cfset querysetcell(q,"packageref","#thisplugin#.#qPackages.name[qPackages.currentrow]#") />
 							<cfset querysetcell(q,"component",listfirst(qComponents.name[qComponents.currentrow],".")) />
+							<cfset querysetcell(q,"bDocument",st.bDocument) />
 						</cfloop>
 					</cfif>
 				</cfloop>
@@ -75,6 +78,8 @@
 				<cfif qPackages.type eq "Dir">
 					<cfdirectory action="list" directory="#application.path.project#/packages/#qPackages.name#" recurse="false" filter="*.cfc" name="qComponents" />
 					<cfloop query="qComponents">
+						<cfset st = getMetadata(createobject("component","farcry.project.packages.#qPackages.name[qPackages.currentrow]#.#listfirst(qComponents.name[qComponents.currentrow],".")#")) />
+						<cfparam name="st.bDocument" default="true" />
 						<cfset queryaddrow(q) />
 						<cfset querysetcell(q,"path","farcry.project.packages.#qPackages.name[qPackages.currentrow]#.#listfirst(qComponents.name[qComponents.currentrow],".")#") />
 						<cfset querysetcell(q,"location","project") />
@@ -82,6 +87,7 @@
 						<cfset querysetcell(q,"package",qPackages.name[qPackages.currentrow]) />
 						<cfset querysetcell(q,"packageref","project.#qPackages.name[qPackages.currentrow]#") />
 						<cfset querysetcell(q,"component",listfirst(qComponents.name[qComponents.currentrow],".")) />
+						<cfset querysetcell(q,"bDocument",st.bDocument) />
 					</cfloop>
 				</cfif>
 			</cfloop>

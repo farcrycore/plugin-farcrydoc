@@ -183,6 +183,9 @@
 		<!--- Find all comments that don't immediately follow a tag element (as the attribute comments do) --->
 		<cfset structappend(stResult,scrapeCommentVariables(source=arguments.source,escapeCode=true),true) />
 		
+		<!--- Clean up examples --->
+		<cfset stResult.examples = replacelist(stResult.examples,"<code>,</code>","<pre class='brush: coldfusion'>,</pre>") />
+		
 		<!--- Arguments --->
 		<cfset stResult.arguments = arraynew(1) />
 		<cfloop from="1" to="#arraylen(arguments.stMetadata.parameters)#" index="i">
@@ -283,7 +286,7 @@
 		<cfset stResult.hint = "" />
 		<cfset stResult.single = true />
 		<cfset stResult.xmlstyle = true />
-		<cfset stResult.bdocument = false />
+		<cfset stResult.bdocument = true />
 		<cfset stResult.bdeprecated = false />
 		
 		<!--- Find all comments that don't immediately follow a tag element (as the attribute comments do) --->
@@ -301,6 +304,9 @@
 				</cfloop>
 			</cfif>
 		</cfloop>
+		
+		<!--- Clean up examples --->
+		<cfset stResult.examples = replacelist(stResult.examples,"<code>,</code>","<pre class='brush: coldfusion'>,</pre>") />
 		
 		<!--- Tag attributes --->
 		<cfset aAttributes = scrapeAll(source=arguments.source,regex="(?:<!---)?<cfparam[^>]*name=(?:'|"")attributes\.[^>]*>(?:--->)?(?:<!---[^>]*>)?") />

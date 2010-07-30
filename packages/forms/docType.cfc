@@ -366,7 +366,7 @@
 		<cfset stType.typename = "docType" />
 		
 		<cfset stType.name = arguments.typename />
-		<cfset stType.bDocument = iif(structkeyexists(stMD,"bDocument"),"stMD.bDocument","0") />
+		<cfset stType.bDocument = iif(structkeyexists(stMD,"bDocument"),"stMD.bDocument","1") />
 		<cfset stType.bDeprecated = iif(structkeyexists(stMD,"bDeprecated"),"stMD.bDeprecated","0") />
 		<cfset stType.displayname = iif(structkeyexists(stMD,"displayname"),"stMD.displayname","thistype") />
 		<cfset stType.hint = iif(structkeyexists(stMD,"hint"),"stMD.hint",de("")) />

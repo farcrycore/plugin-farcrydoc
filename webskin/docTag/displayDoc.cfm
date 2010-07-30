@@ -21,7 +21,7 @@
 	
 	<cfif len(stObj.examples)>
 		<doc:subsection title="Examples">
-			<cfoutput>#replacelist(stObj.examples,"<code>,</code>","<pre class='brush: coldfusion'>,</pre>")#</cfoutput>
+			<cfoutput>#stObj.examples#</cfoutput>
 		</doc:subsection>
 	</cfif>
 	

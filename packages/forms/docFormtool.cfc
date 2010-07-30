@@ -118,7 +118,7 @@
 				<cfset stType.typename = "docFormtool" />
 				
 				<cfset stType.name = thistool />
-				<cfset stType.bDocument = iif(structkeyexists(application.formtools[thistool],"bDocument"),"application.formtools[thistool].bDocument","0") />
+				<cfset stType.bDocument = iif(structkeyexists(application.formtools[thistool],"bDocument"),"application.formtools[thistool].bDocument","1") />
 				<cfset stType.bDeprecated = iif(structkeyexists(application.formtools[thistool],"bDeprecated"),"application.formtools[thistool].bDeprecated","0") />
 				<cfset stType.displayname = iif(structkeyexists(application.formtools[thistool],"displayname"),"application.formtools[thistool].displayname","thistype") />
 				<cfset stType.hint = iif(structkeyexists(application.formtools[thistool],"hint"),"application.formtools[thistool].hint",de("")) />
@@ -140,6 +140,7 @@
 				<cffile action="read" file="#expandpath('/' & replace(application.formtools[thistool].packagepath,'.','/','ALL') & '.cfc')#" variable="source" />
 				<cfset structappend(stType,oScrape.scrapeCommentVariables(source=source,escapeCode=true,debug=stType.name eq "array"),true) />
 				
+				<!--- Clean up examples --->
 				<cfparam name="stType.examples" default="" />
 				
 				<cfset stResult.st[thistool] = stType />
