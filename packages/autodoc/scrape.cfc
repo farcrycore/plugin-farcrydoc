@@ -431,17 +431,17 @@
 		
 		<!--- Comment variables --->
 		<cfif find("@@",arguments.source)>
-			<cfset aMatches = scrapeAll(source=arguments.source,regex="@@[^:]+:(.*?)(?:@@|--->)") />
+			<cfset aMatches = scrapeAll(source=arguments.source,regex="@@[\w\d]+:(.*?)(?:@@|--->)") />
 			<cfloop from="1" to="#arraylen(aMatches)#" index="i">
 				<!--- Get variable name and value --->
-				<cfset varName = scrape(source=aMatches[i],regex="@@([^:]+):",regexref=2) />
-				<cfset varVal = scrape(source=aMatches[i],regex="@@[^:]+:(.*?)(?:@@|--->)",regexref=2) />
+				<cfset varName = scrape(source=aMatches[i],regex="@@([\w\d]+):",regexref=2) />
+				<cfset varVal = scrape(source=aMatches[i],regex="@@[\w\d]+:(.*?)(?:@@|--->)",regexref=2) />
 				
 				<!--- Find and escape <code> sections --->
 				<cfif arguments.escapeCode>
 					<cfset aCode = scrapeAll(source=varVal,regex="<code>(.*?)</code>",regexref=2,trim=false) />
 					<cfloop from="1" to="#arraylen(aCode)#" index="k">
-						<cfset varVal = replace(varVal,aCode[k],cleanCode(code=aCode[k],debug=arguments.debug)) />
+						<cfset varVal = replace(varVal,aCode[k],cleanCode(code=aCode[k])) />
 					</cfloop>
 				</cfif>
 				
