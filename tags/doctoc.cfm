@@ -21,8 +21,7 @@
 
 <cfif thistag.ExecutionMode eq "start">
 	<cfif attributes.showref>
-		<!--- <skin:htmlHead library="jqueryjs" /> --->
-		<skin:loadJS id="jquery" />
+		<skin:htmlHead library="jqueryjs" />
 
 		<skin:htmlHead><cfoutput>
 			<script type="text/javascript">

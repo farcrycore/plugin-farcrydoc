@@ -6,7 +6,7 @@
 <cfparam name="attributes.selector" /><!--- The element to add the TOC to --->
 
 <cfif thistag.ExecutionMode eq "start">
-	<skin:loadJS id="jquery" />
+	<skin:htmlHead id="jquery" />
 
 	<skin:htmlHead><cfoutput>
 		<script type="text/javascript">
