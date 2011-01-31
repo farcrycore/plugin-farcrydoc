@@ -5,17 +5,19 @@
 
 <cfparam name="attributes.force" default="false" />
 
-<cfif thistag.ExecutionMode eq "start">
+<cfif thistag.ExecutionMode eq "start" and not structkeyexists(request,"doccss")>
 	<skin:htmlHead id="jquery" />
 	<skin:htmlHead><cfoutput>
-		<link rel="stylesheet" type="text/css" href="/farcry/plugins/farcrydoc/www/css/docs.css">
-		<link rel="stylesheet" type="text/css" href="/farcry/plugins/farcrydoc/www/css/shCore.css">
-		<link rel="stylesheet" type="text/css" href="/farcry/plugins/farcrydoc/www/css/shThemeDefault.css">
-		<script type="text/javascript" src="/farcry/plugins/farcrydoc/www/js/xregexp.js"></script>
-		<script type="text/javascript" src="/farcry/plugins/farcrydoc/www/js/shCore.js"></script>
-		<script type="text/javascript" src="/farcry/plugins/farcrydoc/www/js/shBrushColdFusion.js"></script>
+		<link rel="stylesheet" type="text/css" href="/farcrydoc/css/docs.css">
+		<link rel="stylesheet" type="text/css" href="/farcrydoc/css/shCore.css">
+		<link rel="stylesheet" type="text/css" href="/farcrydoc/css/shThemeDefault.css">
+		<script type="text/javascript" src="/farcrydoc/js/xregexp.js"></script>
+		<script type="text/javascript" src="/farcrydoc/js/shCore.js"></script>
+		<script type="text/javascript" src="/farcrydoc/js/shBrushColdFusion.js"></script>
 		<script type="text/javascript">jQ(function(){ SyntaxHighlighter.all(); });</script>
 	</cfoutput></skin:htmlHead>
+	
+	<cfset request.doccss = true />
 </cfif>
 
 <cfsetting enablecfoutputonly="false" />
