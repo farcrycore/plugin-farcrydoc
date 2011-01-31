@@ -5,7 +5,7 @@
 
 <cfparam name="attributes.force" default="false" />
 
-<cfif thistag.ExecutionMode eq "start" and not isdefined("application.config.docs.css") or application.config.docs.css>
+<cfif thistag.ExecutionMode eq "start">
 	<skin:htmlHead id="jquery" />
 	<skin:htmlHead><cfoutput>
 		<link rel="stylesheet" type="text/css" href="/farcry/plugins/farcrydoc/www/css/docs.css">

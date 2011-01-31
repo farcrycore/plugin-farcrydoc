@@ -4,9 +4,7 @@
 <cfimport taglib="/farcry/core/tags/webskin" prefix="skin" />
 <cfimport taglib="../../tags" prefix="doc" />
 
-<cfif not isdefined("application.config.docs.css") or application.config.docs.css>
-	<skin:htmlHead id="farcrydocs"><cfoutput><style type="text/css"><cfinclude template="../../www/css/docs.css" /></style></cfoutput></skin:htmlHead>
-</cfif>
+<doc:css />
 
 <cfif (stObj.typename neq "docTag" or not len(stObj.name)) and len(url.ref)>
 	<cfset stObj = getTag(url.ref) />

@@ -5,6 +5,8 @@
 <cfimport taglib="/farcry/core/tags/webskin" prefix="skin" />
 <cfimport taglib="../../tags" prefix="doc" />
 
+<doc:css />
+
 <cfparam name="url.refreshdocs" default="0" />
 <cfparam name="url.showundocumented" default="0" />
 
