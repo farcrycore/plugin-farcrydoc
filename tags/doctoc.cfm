@@ -25,21 +25,21 @@
 
 		<skin:htmlHead><cfoutput>
 			<script type="text/javascript">
-				$j(function(){
-					var $toc = $j("##toc");
+				jQ(function(){
+					var $toc = jQ("##toc");
 					
-					$j("h1").each(function(){
+					jQ("h1").each(function(){
 						$toc.append("<li><a href='##"+this.id+"'>"+this.innerHTML+"</a></li>");
 					});
-					$j("h2").each(function(){
+					jQ("h2").each(function(){
 						$toc.append("<li><a href='##"+this.id+"'>"+this.innerHTML+"</a></li>");
 					});
 					
 					// fixed position definition definition
-					var $opt = $j("##options");
+					var $opt = jQ("##options");
 					var homepos = $opt.offset();
 			        setInterval(function(){
-						var curscrolltop = $j("body").scrollTop() || $j("html").scrollTop();
+						var curscrolltop = jQ("body").scrollTop() || jQ("html").scrollTop();
 						if (curscrolltop + 0 > homepos.top) {
 							$opt.css({
 								position:	'fixed',

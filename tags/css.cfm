@@ -14,7 +14,7 @@
 		<script type="text/javascript" src="/farcry/plugins/farcrydoc/www/js/xregexp.js"></script>
 		<script type="text/javascript" src="/farcry/plugins/farcrydoc/www/js/shCore.js"></script>
 		<script type="text/javascript" src="/farcry/plugins/farcrydoc/www/js/shBrushColdFusion.js"></script>
-		<script type="text/javascript">$j(function(){ SyntaxHighlighter.all(); });</script>
+		<script type="text/javascript">jQ(function(){ SyntaxHighlighter.all(); });</script>
 	</cfoutput></skin:htmlHead>
 </cfif>
 

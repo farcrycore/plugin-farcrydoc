@@ -10,16 +10,16 @@
 
 	<skin:htmlHead><cfoutput>
 		<script type="text/javascript">
-			$j(function(){
-				$j("#attributes.selector#").append("<div id='doccont'><h3>Table of contents</h3><ul id='doctoc'></ul></div><div>&nbsp;</div>");
-				var $cont = $j("##doccont");
+			jQ(function(){
+				jQ("#attributes.selector#").append("<div id='doccont'><h3>Table of contents</h3><ul id='doctoc'></ul></div><div>&nbsp;</div>");
+				var $cont = jQ("##doccont");
 				
-				var $toc = $j("##doctoc");
+				var $toc = jQ("##doctoc");
 				
-				$j("h1").each(function(){
+				jQ("h1").each(function(){
 					$toc.append("<li><a href='##"+this.id+"'>"+this.innerHTML+"</a></li>");
 				});
-				$j("h2").each(function(){
+				jQ("h2").each(function(){
 					$toc.append("<li><a href='##"+this.id+"'>"+this.innerHTML+"</a></li>");
 				});
 				
@@ -27,7 +27,7 @@
 				var homepos = $cont.offset();
 				var width = $cont.width();
 		        setInterval(function(){
-					var curscrolltop = $j("body").scrollTop() || $j("html").scrollTop();
+					var curscrolltop = jQ("body").scrollTop() || jQ("html").scrollTop();
 					if (curscrolltop + 0 > homepos.top) {
 						$cont.css({
 							position:	'fixed',
