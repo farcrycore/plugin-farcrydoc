@@ -137,7 +137,7 @@
 		
 		<cfset var stTags = getTagData() />
 		<cfset var qTags = getTagQuery() />
-		<cfset var stTag = structnew() />
+		<cfset var stTag = duplicate(stTags[listgetat(arguments.tagname,1,'.')][listgetat(arguments.tagname,2,'.')].tags[listgetat(arguments.tagname,3,'.')]) />
 		
 		<cfset stTag.objectid = createuuid() />
 		<cfset stTag.typename = "docTag" />
@@ -147,13 +147,6 @@
 		<cfset stTag.name = listgetat(arguments.tagname,3,'.') />
 		<cfset stTag.taglib = stTags[stTag.location][stTag.library].taglib />
 		<cfset stTag.prefix = stTags[stTag.location][stTag.library].prefix />
-		<cfset stTag.attributes = stTags[stTag.location][stTag.library].tags[stTag.name].attributes />
-		<cfset stTag.description = stTags[stTag.location][stTag.library].tags[stTag.name].description />
-		<cfset stTag.examples = stTags[stTag.location][stTag.library].tags[stTag.name].examples />
-		<cfset stTag.hint = stTags[stTag.location][stTag.library].tags[stTag.name].hint />
-		<cfset stTag.name = stTags[stTag.location][stTag.library].tags[stTag.name].name />
-		<cfset stTag.single = stTags[stTag.location][stTag.library].tags[stTag.name].single />
-		<cfset stTag.xmlstyle = stTags[stTag.location][stTag.library].tags[stTag.name].xmlstyle />
 		
 		<cfreturn stTag />
 	</cffunction>

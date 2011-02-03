@@ -18,7 +18,7 @@
 
 <!--- Deprecation --->
 <cfif stObj.bDeprecated>
-	<cfoutput><p class="Deprecated">This formtool is deprecated</p></cfoutput>
+	<cfoutput><p class="Deprecated">#stObj.deprecated#</p></cfoutput>
 </cfif>
 
 <!--- Description --->

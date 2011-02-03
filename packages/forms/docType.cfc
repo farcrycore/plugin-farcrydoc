@@ -262,6 +262,13 @@
 				<cfparam name="stThis.ftFieldSet" default="" />
 				<cfparam name="stThis.bDeprecated" default="false" />
 				
+				<!--- Deprecated message --->
+				<cfif structkeyexists(stThis,"deprecated")>
+					<cfset stThis.bDeprecated = true />
+				<cfelseif stThis.bDeprecated>
+					<cfset stThis.deprecated = "This property has been deprecated" />
+				</cfif>
+				
 				<cfset arrayappend(aResults,stThis) />
 			</cfif>
 		</cfloop>
@@ -378,6 +385,13 @@
 		<cfset stType.bFriendly =  iif(structkeyexists(stMD,"bFriendly"),"stMD.bFriendly",de("false")) />
 		<cfset stType.bObjectBroker = stMD.bObjectBroker />
 		<cfset stType.objectbrokermaxobjects = stMD.objectbrokermaxobjects />
+		
+		<!--- Deprecated message --->
+		<cfif structkeyexists(stThis,"deprecated")>
+			<cfset stThis.bDeprecated = true />
+		<cfelseif stThis.bDeprecated>
+			<cfset stThis.deprecated = "This type has been deprecated" />
+		</cfif>
 		
 		<!--- Extends --->
 		<cfset stType.aExtends = getExtends(getMetadata(createobject("component",stMD.packagepath))) />

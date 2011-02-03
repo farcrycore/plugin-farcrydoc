@@ -25,7 +25,7 @@
 		
 		<!--- Deprecation --->
 		<cfif stObj.aProperties[i].bDeprecated>
-			<cfoutput><p class="Deprecated">This property is deprecated</p></cfoutput>
+			<cfoutput><p class="Deprecated">#stObj.aProperties[i].deprecated#</p></cfoutput>
 		</cfif>
 		
 		<cfif len(stObj.aProperties[i].hint)>

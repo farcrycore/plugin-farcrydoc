@@ -19,6 +19,11 @@
 		<cfoutput><p>#stObj.hint#"</p></cfoutput>
 	</cfif>
 	
+	<!--- Deprecation --->
+	<cfif stObj.bDeprecated>
+		<cfoutput><p class="Deprecated">#stObj.deprecated#</p></cfoutput>
+	</cfif>
+	
 	<cfif len(stObj.examples)>
 		<doc:subsection title="Examples">
 			<cfoutput>#stObj.examples#</cfoutput>

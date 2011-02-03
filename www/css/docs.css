@@ -35,3 +35,5 @@ img.DocInfoIcon { vertical-align:middle; }
 .LocationCore {  }
 .LocationPlugin {  }
 .LocationProject {  }
+
+.Deprecated { border:1px solid #ff0000; padding:10px; font-weight:bold; background-color:#ffdfdf; text-align:center; }

@@ -18,7 +18,7 @@
 
 <!--- Deprecation --->
 <cfif stObj.bDeprecated>
-	<cfoutput><p class="Deprecated">This type is deprecated</p></cfoutput>
+	<cfoutput><p class="Deprecated">#stObj.deprecated#</p></cfoutput>
 </cfif>
 
 <!--- Description --->

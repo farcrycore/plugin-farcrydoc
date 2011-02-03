@@ -135,6 +135,13 @@
 			<cfset stResult.bDeprecated = false />
 		</cfif>
 		
+		<!--- Deprecated message --->
+		<cfif structkeyexists(arguments.stMetadata,"deprecated")>
+			<cfset stResult.bDeprecated = true />
+		<cfelseif stResult.bDeprecated>
+			<cfset stResult.deprecated = "This component has been deprecated" />
+		</cfif>
+		
 		<!--- Functions --->
 		<cfset stResult.functions = structnew() />
 		<cfif structkeyexists(arguments.stMetadata,"functions")>
@@ -179,6 +186,13 @@
 		<cfparam name="stResult.examples" default="" />
 		<cfparam name="stResult.bDocument" default="true" />
 		<cfparam name="stResult.bDeprecated" default="false" />
+		
+		<!--- Deprecated message --->
+		<cfif structkeyexists(stResult,"deprecated")>
+			<cfset stResult.bDeprecated = true />
+		<cfelseif stResult.bDeprecated>
+			<cfset stResult.deprecated = "This function has been deprecated" />
+		</cfif>
 		
 		<!--- Find all comments that don't immediately follow a tag element (as the attribute comments do) --->
 		<cfset structappend(stResult,scrapeCommentVariables(source=arguments.source,escapeCode=true),true) />
@@ -287,7 +301,7 @@
 		<cfset stResult.single = true />
 		<cfset stResult.xmlstyle = true />
 		<cfset stResult.bdocument = true />
-		<cfset stResult.bdeprecated = false />
+		<cfset stResult.bDeprecated = false />
 		
 		<!--- Find all comments that don't immediately follow a tag element (as the attribute comments do) --->
 		<cfset aCommentMatches = scrapeAll(source=arguments.source,regex="(^|\s)<\!---.*?--->") />
@@ -304,6 +318,13 @@
 				</cfloop>
 			</cfif>
 		</cfloop>
+		
+		<!--- Deprecated message --->
+		<cfif structkeyexists(stResult,"deprecated")>
+			<cfset stResult.bDeprecated = true />
+		<cfelseif stResult.bDeprecated>
+			<cfset stResult.deprecated = "This tag has been deprecated" />
+		</cfif>
 		
 		<!--- Clean up examples --->
 		<cfset stResult.examples = replacelist(stResult.examples,"<code>,</code>","<pre class='brush: coldfusion'>,</pre>") />

@@ -126,6 +126,13 @@
 				<cfset stType.packagepath = application.formtools[thistool].packagepath />
 				<cfset stType.description = iif(structkeyexists(application.formtools[thistool],"description"),"application.formtools[thistool].description",de("")) />
 				
+				<!--- Deprecated message --->
+				<cfif structkeyexists(stType,"deprecated")>
+					<cfset stType.bDeprecated = true />
+				<cfelseif stType.bDeprecated>
+					<cfset stType.deprecated = "This formtool has been deprecated" />
+				</cfif>
+				
 				<!--- Extends --->
 				<cfset stMetadata = getMetadata(createobject("component",application.formtools[thistool].packagepath)) />
 				<cfset stType.aExtends = getExtends(stMetadata) />

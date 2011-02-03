@@ -16,7 +16,7 @@
 <doc:section title="#stObj.location#: #stObj.package#.#stObj.name#">
 	<!--- Deprecation --->
 	<cfif stObj.bDeprecated>
-		<cfoutput><p class="Deprecated">This component is deprecated</p></cfoutput>
+		<cfoutput><p class="Deprecated">#stObj.deprecated#</p></cfoutput>
 	</cfif>
 	
 	<cfif len(stObj.hint)><p>#stObj.hint#</p></cfif>
@@ -31,7 +31,7 @@
 		<doc:subsection title="#stObj.functions[thisfunction].name#">
 			<!--- Deprecation --->
 			<cfif stObj.functions[thisfunction].bDeprecated>
-				<cfoutput><p class="Deprecated">This component is deprecated</p></cfoutput>
+				<cfoutput><p class="Deprecated">#stObj.deprecated#</p></cfoutput>
 			</cfif>
 			
 			<cfif len(stObj.functions[thisfunction].description)>

@@ -12,7 +12,7 @@
 <doc:xml />
 
 <cfoutput>
-	<component name="#stObj.name#" hint="#xmlformat(stObj.hint)#" packagepath="#stObj.packagepath#" scopelocation="#stObj.scopelocation#" bDocument="#stObj.bDocument#" bDeprecated="#stObj.bDeprecated#">
+	<component name="#stObj.name#" hint="#xmlformat(stObj.hint)#" packagepath="#stObj.packagepath#" scopelocation="#stObj.scopelocation#" bDocument="#stObj.bDocument#" bDeprecated="#stObj.bDeprecated#"<cfif stObj.bDeprecated> deprecated="#stObj.deprecated#"</cfif>>
 		<functions><cfloop list="#listsort(structkeylist(stObj.functions),'textnocase')#" index="thisfunction">
 			<function<cfloop collection="#stObj.functions[thisfunction]#" item="thiskey"><cfif issimplevalue(stObj.functions[thisfunction][thiskey]) and not listcontains("description,arguments,examples",thiskey)> #lcase(thiskey)#="#xmlformat(stObj.functions[thisfunction][thiskey])#"</cfif></cfloop>>
 				<description><![CDATA[ #stObj.functions[thisfunction].description# ]]></description>

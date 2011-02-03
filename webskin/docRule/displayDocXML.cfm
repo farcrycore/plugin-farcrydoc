@@ -18,7 +18,7 @@
 </cfif>
 
 <cfoutput>
-	<rule name="#stObj.name#" bDocument="#stObj.bDocument#" bDeprecated="#stObj.bDeprecated#" packagepath="#stObj.packagepath#" bSystem="#stObj.bSystem#" bObjectBroker="#stObj.bObjectBroker#" objectbrokermaxobjects="#stObj.objectbrokermaxobjects#">
+	<rule name="#stObj.name#" bDocument="#stObj.bDocument#" bDeprecated="#stObj.bDeprecated#"<cfif stObj.bDeprecated> deprecated="#stObj.deprecated#"</cfif> packagepath="#stObj.packagepath#" bSystem="#stObj.bSystem#" bObjectBroker="#stObj.bObjectBroker#" objectbrokermaxobjects="#stObj.objectbrokermaxobjects#">
 		<description><![CDATA[ #stObj.description# ]]></description>
 		<extends><cfloop from="1" to="#arraylen(stObj.aExtends)#" index="i">
 			<packagepath>#stObj.aExtends[i]#</packagepath></cfloop>
