@@ -387,10 +387,10 @@
 		<cfset stType.objectbrokermaxobjects = stMD.objectbrokermaxobjects />
 		
 		<!--- Deprecated message --->
-		<cfif structkeyexists(stThis,"deprecated")>
-			<cfset stThis.bDeprecated = true />
-		<cfelseif stThis.bDeprecated>
-			<cfset stThis.deprecated = "This type has been deprecated" />
+		<cfif structkeyexists(stType,"deprecated")>
+			<cfset stType.bDeprecated = true />
+		<cfelseif stType.bDeprecated>
+			<cfset stType.deprecated = "This type has been deprecated" />
 		</cfif>
 		
 		<!--- Extends --->
