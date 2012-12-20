@@ -1,4 +1,4 @@
-<cfcomponent displayname="FarCry Formtool" hint="Formalised content type information structure" extends="farcry.core.packages.forms.forms" output="false">
+<cfcomponent displayname="FarCry Formtool" hint="Formalised content type information structure" extends="docBase" output="false">
 	<cfproperty name="name" type="string" />
 	<cfproperty name="displayname" type="string" />
 	<cfproperty name="filepath" type="string" />
@@ -72,7 +72,7 @@
 		<cfset var source = "" />
 		<cfset var stInfo = structnew() />
 		
-		<cfset stResult.q = querynew("typename,displayname,bDocument","varchar,varchar,bit") />
+		<cfset stResult.q = querynew("typename,location,displayname,bDocument","varchar,varchar,varchar,bit") />
 		<cfset stResult.st = structnew() />
 		
 		<!--- Location filter --->
@@ -98,19 +98,6 @@
 		
 		<cfloop collection="#application.formtools#" item="thistool">
 			<cfif refindnocase(locationfilter,"#arraytolist(application.formtools[thistool].aExtends)#,#application.formtools[thistool].packagepath#") and structkeyexists(application.formtools[thistool],"stProps")>
-				<cfset queryaddrow(stResult.q) />
-				<cfset querysetcell(stResult.q,"typename",thistool) />
-				<cfif structkeyexists(application.formtools[thistool],"displayname")>
-					<cfset querysetcell(stResult.q,"displayname",application.formtools[thistool].displayname) />
-				<cfelse>
-					<cfset querysetcell(stResult.q,"displayname",thistool) />
-				</cfif>
-				<cfif structkeyexists(application.formtools[thistool],"bDocument")>
-					<cfset querysetcell(stResult.q,"bDocument",application.formtools[thistool].bDocument) />
-				<cfelse>
-					<cfset querysetcell(stResult.q,"bDocument",0) />
-				</cfif>
-				
 				<cfset stProps = application.formtools[thistool].stProps />
 				
 				<cfset stType = structnew() />
@@ -125,6 +112,15 @@
 				<cfset stType.filepath = application.formtools[thistool].path />
 				<cfset stType.packagepath = application.formtools[thistool].packagepath />
 				<cfset stType.description = iif(structkeyexists(application.formtools[thistool],"description"),"application.formtools[thistool].description",de("")) />
+				
+				<!--- Location --->
+				<cfif refind("^farcry\.plugins\.",application.formtools[thistool].packagepath)>
+					<cfset stType.location = rereplace(application.formtools[thistool].packagepath,".*\.plugins\.([^\.]+)\.packages\.[^\.]+\.[^\.]+","\1") />
+				<cfelseif refind("farcry\.projects\.",application.formtools[thistool].packagepath)>
+					<cfset stType.location = "project" />
+				<cfelse>
+					<cfset stType.location = "core" />
+				</cfif>
 				
 				<!--- Deprecated message --->
 				<cfif structkeyexists(stType,"deprecated")>
@@ -150,7 +146,15 @@
 				<!--- Clean up examples --->
 				<cfparam name="stType.examples" default="" />
 				
-				<cfset stResult.st[thistool] = stType />
+				<cfparam name="stResult.st.#stType.location#" default="#structnew()#" />
+				<cfset stResult.st[stType.location][thistool] = stType />
+				
+				<cfset queryaddrow(stResult.q) />
+				<cfset querysetcell(stResult.q,"typename",thistool) />
+				<cfset querysetcell(stResult.q,"location",stType.location) />
+				<cfset querysetcell(stResult.q,"displayname",stType.displayname) />
+				<cfset querysetcell(stResult.q,"bDocument",stType.bDocument) />
+				
 			</cfif>
 		</cfloop>
 		
@@ -196,12 +200,113 @@
 	</cffunction>
 	
 	<cffunction name="getFormtool" returntype="struct" access="public" output="false" hint="Returns metadata for the specified type">
-		<cfargument name="typename" type="string" required="true" hint="The type to retrieve" />
+		<cfargument name="location" type="string" required="true" />
+		<cfargument name="formtool" type="string" required="true" hint="The type to retrieve" />
 		<cfargument name="refresh" type="boolean" required="false" default="false" hint="Set to true to refresh information" />
 		
-		<cfset var st = getFormtoolData(arguments.refresh) />
+		<cfset var qFormtools = "" />
+		<cfset var stFormtools = structnew() />
+		<cfset var stFormtool = structnew() />
 		
-		<cfreturn duplicate(st[arguments.typename]) />
+		<cfset qFormtools = getFormtoolQuery(refresh=arguments.refresh) />
+		<cfset stFormtools = getFormtoolData() />
+		
+		<cfquery dbtype="query" name="qFormtools">
+			select	*
+			from	qFormtools
+			where	location='#arguments.location#' and package='#arguments.formtool#'
+		</cfquery>
+		
+		<cfset stFormtool = stFormtools[arguments.location][arguments.formtool] />
+		
+		<cfset stFormtool.objectid = createuuid() />
+		<cfset stFormtool.typename = "docFormtool" />
+		<cfset stFormtool.library = arguments.formtool />
+		<cfset stFormtool.name = arguments.formtool />
+		<cfset stFormtool.label = stFormtool.displayname />
+		
+		<cfreturn stFormtool />
+	</cffunction>
+	
+	
+	
+	<cffunction name="getLibraries" returntype="query" output="false" access="public" hint="Returns a query containing the location, library, tagname, and prefix of every tag">
+		<cfargument name="showundocumented" type="boolean" required="false" default="false" hint="Set to true to include undocumented tags" />
+		<cfargument name="refresh" type="boolean" required="false" default="false" hint="Set to true to force tag metadata cache regeneration" />
+		
+		<cfset var qResult = getFormtoolQuery(argumentCollection=arguments) />
+		
+		<cfif not arguments.showundocumented>
+			<cfquery dbtype="query" name="qResult">
+				select	*
+				from	qResult
+				where	bDocument=1
+			</cfquery>
+		</cfif>
+		
+		<cfquery dbtype="query" name="qResult">
+			select distinct location, typename as library, displayname as label from qResult order by displayname
+		</cfquery>
+		
+		<cfreturn qResult />
+	</cffunction>
+	
+	<cffunction name="getLibrary" returntype="struct" output="false" access="public" hint="Get's a 'library' for this type">
+		<cfargument name="location" type="string" required="true" />
+		<cfargument name="library" type="string" required="true" />
+		
+		<cfset var stResult = structnew() />
+		<cfset var st = getFormtoolData() />
+		
+		<cfif structkeyexists(st[arguments.location],arguments.library)>
+			<cfset stResult = st[arguments.location][arguments.library] />
+			
+			<cfset stResult.name = arguments.library />
+			<cfset stResult.label = stResult.displayname />
+			<cfset stResult.readme = "" />
+			<cfset stResult.children = querynew("empty") />
+		</cfif>
+		
+		<cfreturn stResult />
+	</cffunction>
+	
+	<cffunction name="getItems" returntype="query" output="false" access="public" hint="Get the items for a library">
+		<cfargument name="location" type="string" required="true" />
+		<cfargument name="name" type="string" required="true" />
+		
+		<cfset var qResult = querynew("emtpy") />
+		
+		<cfreturn qResult />
+	</cffunction>
+	
+	<cffunction name="getItem" returntype="struct" output="false" access="public" hint="Alias for getTag">
+		
+		<cfreturn structnew() />
+	</cffunction>
+	
+	<cffunction name="getLabel">
+		<cfargument name="type" type="string" required="true" />
+		
+		<cfswitch expression="#arguments.type#">
+			<cfcase value="itemsingle">
+				<cfreturn "Formtool" />
+			</cfcase>
+			<cfcase value="itemplural">
+				<cfreturn "Formtools" />
+			</cfcase>
+			<cfcase value="librarysingle">
+				<cfreturn "Formtool" />
+			</cfcase>
+			<cfcase value="libraryplural">
+				<cfreturn "Formtools" />
+			</cfcase>
+			<cfcase value="childsingle">
+				<cfreturn "Formtool" />
+			</cfcase>
+			<cfcase value="childplural">
+				<cfreturn "Formtools" />
+			</cfcase>
+		</cfswitch>
 	</cffunction>
 	
 </cfcomponent>

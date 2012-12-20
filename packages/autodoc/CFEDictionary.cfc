@@ -1,249 +1,290 @@
 <cfcomponent hint="Provides functions for generating a CFEclipse dictionary from scraped data" output="false">
 
-	<cffunction name="generate" access="public" returntype="void" description="Generates the required output" output="true">
+	<cffunction name="generate" access="public" returntype="string" description="Generates the required output" output="true">
 		<cfargument name="metadata" type="struct" required="true" hint="Struct containing scraped metadata" />
+		<cfargument name="return" type="boolean" required="false" default="false" />
 		
-		<cfcontent type="text/xml" />
-		<cfoutput><?xml version="1.0" ?>
-<dictionary xmlns="http://www.cfeclipse.org/version1/dictionary"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.cfeclipse.org/version1/dictionary.xsd http://cfeclipse.tigris.org/version1/dictionary/dictionary.xsd"
-></cfoutput>
+		<cfset var result = createObject("java","java.lang.StringBuffer").init() />
+		<cfset var tmp = "" />
+		
+		<cfset result.append('<?xml version="1.0" ?><dictionary xmlns="http://www.cfeclipse.org/version1/dictionary" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.cfeclipse.org/version1/dictionary.xsd http://cfeclipse.tigris.org/version1/dictionary/dictionary.xsd">') />
 		
 		<cfif structkeyexists(arguments.metadata,"libraries")>
-			<cfoutput>#generateTags(arguments.metadata.libraries)#</cfoutput>
+			<cfset generateTags(arguments.metadata.libraries,result) />
 		</cfif>
 		
 		<cfif structkeyexists(arguments.metadata,"packages")>
-			<cfoutput>#generateFunctions(arguments.metadata.packages)#</cfoutput>
+			<cfset generateFunctions(arguments.metadata.packages,result) />
 		</cfif>
 		
-		<cfoutput>
-	<scopes></cfoutput>
-	
-		<cfinclude template="scopes.cfm" />
+		<cfset result.append("<scopes>") />
+		
+		<cfsavecontent variable="tmp"><cfinclude template="scopes.cfm" /></cfsavecontent>
+		<cfset result.append(tmp) />
+		
 		<cfif structkeyexists(arguments.metadata,"packages")>
-			<cfoutput>#generateFunctionScopes(arguments.metadata.packages)#</cfoutput>
+			<cfset generateFunctionScopes(arguments.metadata.packages,result) />
 		</cfif>
 		
-		<cfoutput>
-	</scopes></cfoutput>
+		<cfset result.append("</scopes>") />
+		<cfset result.append("</dictionary>") />
 		
-		<cfoutput>
-</dictionary></cfoutput>
+		<cfif arguments.return>
+			<cfreturn result.toString() />
+		<cfelse>
+			<cfcontent type="text/xml" reset="true" />
+			<cfoutput>#result.toString()#</cfoutput>
+		</cfif>
 	</cffunction>
 	
 	<cffunction name="generateFunctionScopes" access="public" returntype="string" description="Generates the functions element for the dictionary" output="false">
 		<cfargument name="stFunctions" type="struct" required="true" hint="The struct containing the scraped function information" />
+		<cfargument name="result" type="any" required="false" />
 		
-		<cfset var sResult = "" /><!--- Generated XML --->
 		<cfset var package = "" /><!--- Library key --->
 		<cfset var comp = "" /><!--- Component key --->
 		<cfset var func = "" /><!--- Tag key --->
 		
+		<cfif not structkeyexists(arguments,"result")>
+			<cfset arguments.result = createObject("java","java.lang.StringBuffer").init() />
+		</cfif>
+		
 		<cfloop collection="#arguments.stFunctions#" item="package">
-			<cfloop collection="#arguments.stFunctions[package].components#" item="comp">
-				<cfloop collection="#arguments.stFunctions[package].components[comp].functions#" item="func">
-					<cfif len(arguments.stFunctions[package].components[comp].scopelocation)>
-						<cfset sResult = "#sResult#<scope value=""#arguments.stFunctions[package].components[comp].scopelocation#.#arguments.stFunctions[package].components[comp].functions[func].name#""></scope>" />
-					</cfif>
-				</cfloop>
+			<cfloop collection="#arguments.stFunctions[package]#" item="comp">
+				<cfif isstruct(arguments.stFunctions[package][comp])>
+					<cfloop collection="#arguments.stFunctions[package][comp].functions#" item="func">
+						<cfif len(arguments.stFunctions[package][comp].scopelocation)>
+							<cfset arguments.result.append("<scope value=""#arguments.stFunctions[package][comp].scopelocation#.#arguments.stFunctions[package][comp].functions[func].name#""></scope>") />
+						</cfif>
+					</cfloop>
+				</cfif>
 			</cfloop>
 		</cfloop>
 
-		<cfreturn sResult />
+		<cfreturn arguments.result />
 	</cffunction>
 
 	<cffunction name="generateFunctions" access="public" returntype="string" description="Generates the functions element for the dictionary" output="false">
 		<cfargument name="stFunctions" type="struct" required="true" hint="The struct containing the scraped function information" />
+		<cfargument name="result" type="any" required="false" />
 		
-		<cfset var sResult = "" /><!--- Generated XML --->
 		<cfset var package = "" /><!--- Library key --->
 		<cfset var comp = "" /><!--- Component key --->
 		<cfset var func = "" /><!--- Tag key --->
 		<cfset var temp = "" /><!--- Temporary result of savecontent --->
 		
-		<cfsavecontent variable="sResult"><cfoutput>
-			
-	<functions></cfoutput></cfsavecontent>
-			
+		<cfif not structkeyexists(arguments,"result")>
+			<cfset arguments.result = createObject("java","java.lang.StringBuffer").init() />
+		</cfif>
+		
+		<cfset arguments.result.append("<functions>") />
+		
 		<cfloop collection="#arguments.stFunctions#" item="package">
-			<cfloop collection="#arguments.stFunctions[package].components#" item="comp">
-				<cfloop collection="#arguments.stFunctions[package].components[comp].functions#" item="func">
-					<cfif len(arguments.stFunctions[package].components[comp].scopelocation)>
-						<cfset sResult = "#sResult##generateFunction(componentpath="#arguments.stFunctions[package].components[comp].scopelocation#",stFunction=arguments.stFunctions[package].components[comp].functions[func])#" />
-					<cfelse>
-						<cfset sResult = "#sResult##generateFunction(componentpath="#arguments.stFunctions[package].components[comp].packagepath#",stFunction=arguments.stFunctions[package].components[comp].functions[func])#" />
-					</cfif>
-				</cfloop>
+			<cfloop collection="#arguments.stFunctions[package]#" item="comp">
+				<cfif isstruct(arguments.stFunctions[package][comp])>
+					<cfloop collection="#arguments.stFunctions[package][comp].functions#" item="func">
+						<cfif len(arguments.stFunctions[package][comp].scopelocation)>
+							<cfset generateFunction(componentpath="#arguments.stFunctions[package][comp].scopelocation#",stFunction=arguments.stFunctions[package][comp].functions[func],result=arguments.result) />
+						<cfelse>
+							<cfset generateFunction(componentpath="#arguments.stFunctions[package][comp].packagepath#",stFunction=arguments.stFunctions[package][comp].functions[func],result=arguments.result) />
+						</cfif>
+					</cfloop>
+				</cfif>
 			</cfloop>
 		</cfloop>
+		
+		<cfset arguments.result.append("</functions>") />
 
-		<cfsavecontent variable="temp"><cfoutput>
-	</functions></cfoutput></cfsavecontent>
-		<cfset sResult = "#sResult##temp#">
-
-		<cfreturn sResult />
+		<cfreturn arguments.result />
 	</cffunction>
 
 	<cffunction name="generateFunction" access="public" returntype="string" description="Generates a function element for the dictionary" output="false">
 		<cfargument name="componentpath" type="string" required="true" hint="The function's package" />
 		<cfargument name="stFunction" type="struct" required="true" hint="The function metadata" />
+		<cfargument name="result" type="any" required="false" />
 		
-		<cfset var sResult = "" /><!--- Generated XML --->
 		<cfset var i = 0 /><!--- Iterator --->
 		<cfset var temp = "" /><!--- Temporary result of savecontent --->
 		
-		<cfsavecontent variable="sResult"><cfoutput>
-			
-		<function creator="8" name="#arguments.stFunction.name#" returns="#arguments.stFunction.returntype#">
-			<help><![CDATA[
-				#arguments.stFunction.hint#
-			]]></help></cfoutput></cfsavecontent>
+		<cfif not structkeyexists(arguments,"result")>
+			<cfset arguments.result = createObject("java","java.lang.StringBuffer").init() />
+		</cfif>
+		
+		<cfset arguments.result.append('<function creator="8" name="#arguments.stFunction.name#" returns="#arguments.stFunction.returntype#">') />
+		<cfset arguments.result.append('<help><![CDATA[#arguments.stFunction.hint#]]></help>') />
 				
 		<cfloop from="1" to="#arraylen(arguments.stFunction.arguments)#" index="i">
-			<cfset sResult = "#sResult##generateArgument(stArg=arguments.stFunction.arguments[i])#" />
+			<cfset generateArgument(stArg=arguments.stFunction.arguments[i],result=arguments.result) />
 		</cfloop>
 				
-		<cfsavecontent variable="temp"><cfoutput>
-		</function></cfoutput></cfsavecontent>
-		<cfset sResult = "#sResult##temp#">
+		<cfset arguments.result.append("</function>") />
 		
-		<cfreturn sResult />
+		<cfreturn arguments.result />
 	</cffunction>
 
 	<cffunction name="generateArgument" access="public" returntype="string" description="Generates an argument element for the dictionary" output="false">
 		<cfargument name="stArg" type="struct" required="true" hint="The argument metadata" />
+		<cfargument name="result" type="any" required="false" />
 		
-		<cfset var sResult = "" /><!--- Generated XML --->
 		<cfset var i = 0 /><!--- Iterator --->
 		<cfset var temp = "" /><!--- Temporary result of savecontent --->
 		
-		<cfsavecontent variable="sResult"><cfoutput>
-			<parameter name="#arguments.stArg.name#" type="#arguments.stArg.type#" required="<cfif arguments.stArg.required>true<cfelse>false</cfif>">
-				<help><![CDATA[
-					#arguments.stArg.hint#
-				]]></help></cfoutput></cfsavecontent>
-				
-				
+		<cfif not structkeyexists(arguments,"result")>
+			<cfset arguments.result = createObject("java","java.lang.StringBuffer").init() />
+		</cfif>
+		
+		<cfset arguments.result.append('<parameter name="#arguments.stArg.name#" type="#arguments.stArg.type#" required="') />
+		
+		<cfif arguments.stArg.required>
+			<cfset arguments.result.append('true') />
+		<cfelse>
+			<cfset arguments.result.append('false') />
+		</cfif>
+		
+		<cfset arguments.result.append('">') />
+		
+		<cfset arguments.result.append('<help><![CDATA[#arguments.stArg.hint#]]></help>') />
+		
 		<cfif listlen(arguments.stArg.options)>
-			<cfsavecontent variable="temp"><cfoutput>
-				<values<cfif structkeyexists(arguments.stArg,'default')> default="#xmlformat(arguments.stArg.default)#"</cfif>></cfoutput></cfsavecontent>
-			<cfset sResult = "#sResult##temp#">
+			<cfset arguments.result.append('<values') />
+			
+			<cfif structkeyexists(arguments.stArg,'default')>
+				<cfset arguments.result.append(' default="#xmlformat(arguments.stArg.default)#"') />
+			</cfif>
 			
 			<cfloop list="#arguments.stArg.options#" index="i">
-				<cfsavecontent variable="temp"><cfoutput>
-					<value option="#xmlformat(i)#" /></cfoutput></cfsavecontent>
-				<cfset sResult = "#sResult##temp#">
+				<cfset arguments.result.append('<value option="#xmlformat(i)#" />') />
 			</cfloop>
 			
-			<cfsavecontent variable="temp"><cfoutput>
-				</values></cfoutput></cfsavecontent>
-			<cfset sResult = "#sResult##temp#">
+			<cfset arguments.result.append('</values>') />
 		<cfelse>
+			<cfset arguments.result.append('<values') />
 			
-			<cfsavecontent variable="temp"><cfoutput>
-				<values<cfif structkeyexists(arguments.stArg,'default')> default="#xmlformat(arguments.stArg.default)#"</cfif> /></cfoutput></cfsavecontent>
-			<cfset sResult = "#sResult##temp#">
+			<cfif structkeyexists(arguments.stArg,'default')>
+				<cfset arguments.result.append(' default="#xmlformat(arguments.stArg.default)#"') />
+			</cfif>
+			
+			<cfset arguments.result.append(' />') />
 		</cfif>
 			
-		<cfsavecontent variable="temp"><cfoutput>
-			</parameter></cfoutput></cfsavecontent>
-		<cfset sResult = "#sResult##temp#">
+		<cfset arguments.result.append('</parameter>') />
 		
-		<cfreturn sResult />
+		<cfreturn arguments.result />
 	</cffunction>
 	
 	<cffunction name="generateTags" access="public" returntype="string" description="Generates the tags element for the dictionary" output="false">
 		<cfargument name="stTags" type="struct" required="true" hint="The struct containing the scraped tag information" />
+		<cfargument name="result" type="any" required="false" />
 		
-		<cfset var sResult = "" /><!--- Generated XML --->
 		<cfset var library = "" /><!--- Library key --->
 		<cfset var tag = "" /><!--- Tag key --->
 		<cfset var temp = "" /><!--- Temporary result of savecontent --->
 		
-		<cfsavecontent variable="sResult"><cfoutput>
-			
-	<tags></cfoutput></cfsavecontent>
-			
+		<cfif not structkeyexists(arguments,"result")>
+			<cfset arguments.result = createObject("java","java.lang.StringBuffer").init() />
+		</cfif>
+		
+		<cfset arguments.result.append('<tags>') />
+		
 		<cfloop collection="#arguments.stTags#" item="library">
 			<cfloop collection="#arguments.stTags[library].tags#" item="tag">
-				<cfset sResult = "#sResult##generateTag(prefix=arguments.stTags[library].prefix,stTag=arguments.stTags[library].tags[tag])#" />
+				<cfset generateTag(prefix=arguments.stTags[library].prefix,stTag=arguments.stTags[library].tags[tag],result=arguments.result) />
 			</cfloop>
 		</cfloop>
 			
-		<cfsavecontent variable="temp"><cfoutput>
-	</tags></cfoutput></cfsavecontent>
-		<cfset sResult = "#sResult##temp#">
-
-		<cfreturn sResult />
+		<cfset arguments.result.append('</tags>') />
+		
+		<cfreturn arguments.result />
 	</cffunction>
 
 	<cffunction name="generateTag" access="public" returntype="string" description="Generates a tag element for the dictionary" output="false">
 		<cfargument name="prefix" type="string" required="true" hint="The tag's library prefix" />
 		<cfargument name="stTag" type="struct" required="true" hint="The tag metadata" />
+		<cfargument name="result" type="any" required="false" />
 		
-		<cfset var sResult = "" /><!--- Generated XML --->
 		<cfset var i = 0 /><!--- Iterator --->
 		<cfset var temp = "" /><!--- Temporary result of savecontent --->
 		
-		<cfsavecontent variable="sResult"><cfoutput>
-			
-		<tag creator="8" name="#arguments.prefix#:#lcase(arguments.stTag.name)#" single="<cfif arguments.stTag.single>true<cfelse>false</cfif>" xmlstyle="<cfif arguments.stTag.xmlstyle>true<cfelse>false</cfif>">
-			<help><![CDATA[
-				#arguments.stTag.hint#
-			]]></help></cfoutput></cfsavecontent>
-			
+		<cfif not structkeyexists(arguments,"result")>
+			<cfset arguments.result = createObject("java","java.lang.StringBuffer").init() />
+		</cfif>
+		
+		<cfset arguments.result.append('<tag creator="8" name="#arguments.prefix#:#arguments.stTag.name#" single="') />
+		
+		<cfif arguments.stTag.single>
+			<cfset arguments.result.append('true') />
+		<cfelse>
+			<cfset arguments.result.append('false') />
+		</cfif>
+		
+		<cfset arguments.result.append('" xmlstyle="') />
+		
+		<cfif arguments.stTag.xmlstyle>
+			<cfset arguments.result.append('true') />
+		<cfelse>
+			<cfset arguments.result.append('false') />
+		</cfif>
+		
+		<cfset arguments.result.append('"><help><![CDATA[#arguments.stTag.hint#]]></help>') />
+		
 		<cfloop from="1" to="#arraylen(arguments.stTag.attributes)#" index="i">
-			<cfset sResult = "#sResult##generateAttribute(stAttr=arguments.stTag.attributes[i])#" />
+			<cfset generateAttribute(stAttr=arguments.stTag.attributes[i],result=arguments.result) />
 		</cfloop>
 			
-		<cfsavecontent variable="temp"><cfoutput>
-		</tag></cfoutput></cfsavecontent>
-		<cfset sResult = "#sResult##temp#">
+		<cfset arguments.result.append('</tag>') />
 		
-		<cfreturn sResult />
+		<cfreturn arguments.result />
 	</cffunction>
 
 	<cffunction name="generateAttribute" access="public" returntype="string" description="Generates an attribute element for the dictionary" output="false">
 		<cfargument name="stAttr" type="struct" required="true" hint="The attribute metadata" />
+		<cfargument name="result" type="any" required="false" />
 		
-		<cfset var sResult = "" /><!--- Generated XML --->
 		<cfset var i = 0 /><!--- Iterator --->
 		<cfset var temp = "" /><!--- Temporary result of savecontent --->
 		
-		<cfsavecontent variable="sResult"><cfoutput>
-			<parameter name="#arguments.stAttr.name#" type="#arguments.stAttr.type#" required="<cfif arguments.stAttr.required>true<cfelse>false</cfif>">
-				<help><![CDATA[
-					#arguments.stAttr.hint#
-				]]></help></cfoutput></cfsavecontent>
-				
-			
+		<cfif not structkeyexists(arguments,"result")>
+			<cfset arguments.result = createObject("java","java.lang.StringBuffer").init() />
+		</cfif>
+		
+		<cfset arguments.result.append('<parameter name="#arguments.stAttr.name#" type="#arguments.stAttr.type#" required="') />
+		
+		<cfif arguments.stAttr.required>
+			<cfset arguments.result.append('true') />
+		<cfelse>
+			<cfset arguments.result.append('false') />
+		</cfif>
+		
+		
+		<cfset arguments.result.append('"><help><![CDATA[#arguments.stAttr.hint#]]></help>') />
+		
 		<cfif listlen(arguments.stAttr.options)>
-			<cfsavecontent variable="temp"><cfoutput>
-				<values<cfif structkeyexists(arguments.stAttr,'default')> default="#xmlformat(arguments.stAttr.default)#"</cfif>></cfoutput></cfsavecontent>
-			<cfset sResult = "#sResult##temp#">
+			<cfset arguments.result.append('<values') />
+			
+			<cfif structkeyexists(arguments.stAttr,'default')>
+				<cfset arguments.result.append(' default="#xmlformat(arguments.stAttr.default)#"') />
+			</cfif>
+			
+			<cfset arguments.result.append(">")>
 			
 			<cfloop list="#arguments.stAttr.options#" index="i">
-				<cfsavecontent variable="temp"><cfoutput>
-					<value option="#xmlformat(i)#" /></cfoutput></cfsavecontent>
-				<cfset sResult = "#sResult##temp#">
+				<cfset arguments.result.append('<value option="#xmlformat(i)#" />') />
 			</cfloop>
-		
-			<cfsavecontent variable="temp"><cfoutput>
-				</values></cfoutput></cfsavecontent>
-			<cfset sResult = "#sResult##temp#">
+			
+			<cfset arguments.result.append('</values>') />
 		<cfelse>
-			<cfsavecontent variable="temp"><cfoutput>
-				<values<cfif structkeyexists(arguments.stAttr,'default')> default="#xmlformat(arguments.stAttr.default)#"</cfif> /></cfoutput></cfsavecontent>
-			<cfset sResult = "#sResult##temp#">
+			<cfset arguments.result.append('<values') />
+			
+			<cfif structkeyexists(arguments.stAttr,'default')>
+				<cfset arguments.result.append(' default="#xmlformat(arguments.stAttr.default)#"') />
+			</cfif>
+			
+			<cfset arguments.result.append(' />') />
 		</cfif>
 				
-		<cfsavecontent variable="temp"><cfoutput>
-			</parameter></cfoutput></cfsavecontent>
-		<cfset sResult = "#sResult##temp#">
+		<cfset arguments.result.append('</parameter>') />
 		
-		<cfreturn sResult />
+		<cfreturn arguments.result />
 	</cffunction>
 
 </cfcomponent>

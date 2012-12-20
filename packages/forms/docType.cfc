@@ -1,4 +1,4 @@
-<cfcomponent displayname="FarCry Type" hint="Formalised content type information structure" extends="farcry.core.packages.forms.forms" output="false">
+<cfcomponent displayname="FarCry Type" hint="Formalised content type information structure" extends="docBase" output="false">
 	<cfproperty name="name" type="string" />
 	<cfproperty name="displayname" type="string" />
 	<cfproperty name="filepath" type="string" />
@@ -363,65 +363,98 @@
 	</cffunction>
 	
 	<cffunction name="generateTypeMetadata" returntype="struct" access="public" output="false" hint="Generates and returns information for the specified type">
-		<cfargument name="typename" type="string" required="true" hint="The type to generate" />
-	
+		<cfset var stResults = structnew() />
 		<cfset var stType = structnew() />
-		<cfset var stMD = application.stCOAPI[arguments.typename] />
+		<cfset var stMD = structnew() />
 		
-		<cfset stType = structnew() />
-		<cfset stType.objectid = createuuid() />
-		<cfset stType.typename = "docType" />
+		<cfset stResults.q = generateTypeQuery() />
+		<cfset stResults.st = structnew() />
 		
-		<cfset stType.name = arguments.typename />
-		<cfset stType.bDocument = iif(structkeyexists(stMD,"bDocument"),"stMD.bDocument","1") />
-		<cfset stType.bDeprecated = iif(structkeyexists(stMD,"bDeprecated"),"stMD.bDeprecated","0") />
-		<cfset stType.displayname = iif(structkeyexists(stMD,"displayname"),"stMD.displayname","thistype") />
-		<cfset stType.hint = iif(structkeyexists(stMD,"hint"),"stMD.hint",de("")) />
-		<cfset stType.filepath = stMD.path />
-		<cfset stType.packagepath = stMD.packagepath />
-		<cfset stType.description = iif(structkeyexists(stMD,"description"),"stMD.description",de("")) />
-		<cfset stType.bSystem =  iif(structkeyexists(stMD,"bSystem"),"stMD.bSystem",de("false")) />
-		<cfset stType.bUseInTree =  iif(structkeyexists(stMD,"bUseInTree"),"stMD.bUseInTree",de("false")) />
-		<cfset stType.bFriendly =  iif(structkeyexists(stMD,"bFriendly"),"stMD.bFriendly",de("false")) />
-		<cfset stType.bObjectBroker = stMD.bObjectBroker />
-		<cfset stType.objectbrokermaxobjects = stMD.objectbrokermaxobjects />
+		<cfsetting requesttimeout="100000" />
 		
-		<!--- Deprecated message --->
-		<cfif structkeyexists(stType,"deprecated")>
-			<cfset stType.bDeprecated = true />
-		<cfelseif stType.bDeprecated>
-			<cfset stType.deprecated = "This type has been deprecated" />
-		</cfif>
+		<cfoutput query="stResults.q" group="location">
+			<cfset stResults.st[stResults.q.location] = structnew() />
+			
+			<cfoutput group="package">
+				<cfset stResults.st[stResults.q.location][stResults.q.package] = structnew() />
+				
+				<!--- Library blurb --->
+				<cfif fileexists("#stResults.q.packagepath#/readme.html")>
+					<cffile action="read" file="#stResults.q.packagepath#/readme.html" variable="stResults.st.#stResults.q.location#.#stResults.q.package#.readme" />
+					<cfif find("deprecated",stResults.st[stResults.q.location][stResults.q.package].readme)>
+						<cfset stResults.st[stResults.q.location][stResults.q.package].bDeprecated = true />
+					<cfelse>
+						<cfset stResults.st[stResults.q.location][stResults.q.package].bDeprecated = false />
+					</cfif>
+				<cfelse>
+					<cfset stResults.st[stResults.q.location][stResults.q.package].readme = "" />
+					<cfset stResults.st[stResults.q.location][stResults.q.package].bDeprecated = false />
+				</cfif>
+				
+				<cfoutput>
+					<cfset stMD = application.stCOAPI[stResults.q.typename] />
+					<cfset stType = structnew() />
+					<cfset stType.objectid = createuuid() />
+					<cfset stType.typename = "docType" />
+					
+					<cfset stType.name = stResults.q.typename />
+					<cfset stType.label = stResults.q.displayname />
+					<cfset stType.location = stResults.q.location />
+					<cfset stType.library = stResults.q.package />
+					<cfset stType.bDocument = stResults.q.bDocument />
+					<cfset stType.bDeprecated = iif(structkeyexists(stMD,"bDeprecated"),"stMD.bDeprecated","0") />
+					<cfset stType.displayname = iif(structkeyexists(stMD,"displayname"),"stMD.displayname","thistype") />
+					<cfset stType.hint = iif(structkeyexists(stMD,"hint"),"stMD.hint",de("")) />
+					<cfset stType.filepath = stMD.path />
+					<cfset stType.packagepath = stMD.packagepath />
+					<cfset stType.description = iif(structkeyexists(stMD,"description"),"stMD.description",de("")) />
+					<cfset stType.bSystem =  iif(structkeyexists(stMD,"bSystem"),"stMD.bSystem",de("false")) />
+					<cfset stType.bUseInTree =  iif(structkeyexists(stMD,"bUseInTree"),"stMD.bUseInTree",de("false")) />
+					<cfset stType.bFriendly =  iif(structkeyexists(stMD,"bFriendly"),"stMD.bFriendly",de("false")) />
+					<cfset stType.bObjectBroker = stMD.bObjectBroker />
+					<cfset stType.objectbrokermaxobjects = stMD.objectbrokermaxobjects />
+					
+					<!--- Deprecated message --->
+					<cfif structkeyexists(stType,"deprecated")>
+						<cfset stType.bDeprecated = true />
+					<cfelseif stType.bDeprecated>
+						<cfset stType.deprecated = "This type has been deprecated" />
+					</cfif>
+					
+					<!--- Extends --->
+					<cfset stType.aExtends = getExtends(getMetadata(createobject("component",stMD.packagepath))) />
+					
+					<!--- Properties --->
+					<cfset stType.aProperties = getPropertyDetails(stMD.stProps) />
+					
+					<!--- Joins --->
+					<cfset stType.aJoinTo = getJoinTo(stMD.stProps) />
+					<cfset stType.aJoinFrom = getJoinFrom(stResults.q.typename) />
+					
+					<!--- Permisssions --->
+					<cfset stType.aObjectPermissions = getObjectPermissions(stResults.q.typename) />
+					<cfset stType.aTypePermissions = getTypePermissions(stResults.q.typename) />
+					
+					<!--- File paths --->
+					<cfset stType.aFileLocations = getFileLocations(stMD.stProps)>
+					
+					<!--- Webskins --->
+					<cfset stType.aWebskins = getWebskinDetails(stResults.q.typename) />
+					
+					<!--- Warnings --->
+					<cfset stType.aWarnings = getWarnings(stType) />
+					
+					<cfset stResults.st[stResults.q.location][stResults.q.package][stResults.q.typename] = stType />
+				</cfoutput>
+			</cfoutput>
+		</cfoutput>
 		
-		<!--- Extends --->
-		<cfset stType.aExtends = getExtends(getMetadata(createobject("component",stMD.packagepath))) />
-		
-		<!--- Properties --->
-		<cfset stType.aProperties = getPropertyDetails(stMD.stProps) />
-		
-		<!--- Joins --->
-		<cfset stType.aJoinTo = getJoinTo(stMD.stProps) />
-		<cfset stType.aJoinFrom = getJoinFrom(arguments.typename) />
-		
-		<!--- Permisssions --->
-		<cfset stType.aObjectPermissions = getObjectPermissions(arguments.typename) />
-		<cfset stType.aTypePermissions = getTypePermissions(arguments.typename) />
-		
-		<!--- File paths --->
-		<cfset stType.aFileLocations = getFileLocations(stMD.stProps)>
-		
-		<!--- Webskins --->
-		<cfset stType.aWebskins = getWebskinDetails(arguments.typename) />
-		
-		<!--- Warnings --->
-		<cfset stType.aWarnings = getWarnings(stType) />
-		
-		<cfreturn stType />
+		<cfreturn stResults />
 	</cffunction>
 	
 	<cffunction name="generateTypeQuery" returntype="query" access="public" output="false" hint="Generates and returns type information">
 		<cfset var locationfilter = "" />
-		<cfset var q = querynew("typename,displayname,bDocument","varchar,varchar,bit") />
+		<cfset var q = querynew("location,package,packagepath,typename,displayname,bDocument","varchar,varchar,varchar,varchar,varchar,bit") />
 		
 		<!--- Location filter --->
 		<cfif isdefined("application.config.docs.locations")>
@@ -447,6 +480,15 @@
 		<cfloop collection="#application.stCOAPI#" item="thistype">
 			<cfif refindnocase(locationfilter,"#arraytolist(application.stCOAPI[thistype].aExtends)#,#application.stCOAPI[thistype].packagepath#")>
 				<cfset queryaddrow(q) />
+				<cfif refind("^farcry\.plugins\.",application.stCOAPI[thistype].packagepath)>
+					<cfset querysetcell(q,"location",rereplace(application.stCOAPI[thistype].packagepath,".*\.plugins\.([^\.]+)\.packages\.[^\.]+\.[^\.]+","\1")) />
+				<cfelseif refind("farcry\.projects\.",application.stCOAPI[thistype].packagepath)>
+					<cfset querysetcell(q,"location","project") />
+				<cfelse>
+					<cfset querysetcell(q,"location","core") />
+				</cfif>
+				<cfset querysetcell(q,"package",rereplace(application.stCOAPI[thistype].packagepath,".*\.packages\.([^\.]+)\.[^\.]+","\1")) />
+				<cfset querysetcell(q,"packagepath",listdeleteat(application.stCOAPI[thistype].path,listlen(application.stCOAPI[thistype].path,"/\"),"\/")) />
 				<cfset querysetcell(q,"typename",thistype) />
 				<cfif structkeyexists(application.stCOAPI[thistype],"displayname")>
 					<cfset querysetcell(q,"displayname",application.stCOAPI[thistype].displayname) />
@@ -456,7 +498,7 @@
 				<cfif structkeyexists(application.stCOAPI[thistype],"bDocument")>
 					<cfset querysetcell(q,"bDocument",application.stCOAPI[thistype].bDocument) />
 				<cfelse>
-					<cfset querysetcell(q,"bDocument",0) />
+					<cfset querysetcell(q,"bDocument",1) />
 				</cfif>
 			</cfif>
 		</cfloop>
@@ -473,8 +515,7 @@
 		
 		<cfif not isdefined("application.fc.autodoc.types.q") or arguments.refresh>
 			<cfparam name="application.fc.autodoc" default="#structnew()#" />
-			<cfset application.fc.autodoc.types = structnew() />
-			<cfset application.fc.autodoc.types.q = generateTypeQuery() />
+			<cfset application.fc.autodoc.types = generateTypeMetadata() />
 		</cfif>
 		
 		<cfset qResult = application.fc.autodoc.types.q />
@@ -491,15 +532,17 @@
 	</cffunction>
 	
 	<cffunction name="getType" returntype="struct" access="public" output="false" hint="Returns metadata for the specified type">
+		<cfargument name="location" type="string" required="true" />
+		<cfargument name="package" type="string" required="true" />
 		<cfargument name="typename" type="string" required="true" hint="The type to retrieve" />
 		<cfargument name="refresh" type="boolean" required="false" default="false" hint="Set to true to refresh information" />
 		
-		<cfif not isdefined("application.fc.autodoc.types.st.#arguments.typename#") or arguments.refresh>
-			<cfparam name="application.fc.autodoc.types.st" default="#structnew()#" />
-			<cfset application.fc.autodoc.types.st[arguments.typename] = generateTypeMetadata(arguments.typename) />
+		<cfif not isdefined("application.fc.autodoc.types.st.#arguments.location#") or arguments.refresh>
+			<cfparam name="application.fc.autodoc" default="#structnew()#" />
+			<cfset application.fc.autodoc.types = generateTypeMetadata() />
 		</cfif>
 		
-		<cfreturn duplicate(application.fc.autodoc.types.st[arguments.typename]) />
+		<cfreturn duplicate(application.fc.autodoc.types.st[arguments.location][arguments.package][arguments.typename]) />
 	</cffunction>
 	
 	
@@ -544,6 +587,99 @@
 		</cfif>
 		
 		<cfreturn qFiles />
+	</cffunction>
+	
+	<cffunction name="getTypeSingle">
+		
+		<cfreturn "Type" />
+	</cffunction>
+	
+	<cffunction name="getTypePlural">
+		
+		<cfreturn "Types" />
+	</cffunction>
+	
+	<cffunction name="getTypeSubsection">
+		
+		<cfreturn "Type Packages" />
+	</cffunction>
+	
+	
+	<cffunction name="getLibraries" returntype="query" output="false" access="public" hint="Returns a query containing the location, library, tagname, and prefix of every tag">
+		<cfargument name="showundocumented" type="boolean" required="false" default="false" hint="Set to true to include undocumented tags" />
+		<cfargument name="refresh" type="boolean" required="false" default="false" hint="Set to true to force tag metadata cache regeneration" />
+		
+		<cfset var qResult = getTypeQuery(argumentCollection=arguments) />
+		
+		<cfquery dbtype="query" name="qResult">
+			select distinct location, package as library, package as label from qResult where bDocument=1 order by package
+		</cfquery>
+		
+		<cfreturn qResult />
+	</cffunction>
+	
+	<cffunction name="getLibrary" returntype="struct" output="false" access="public" hint="Get's a 'library' for this type">
+		<cfargument name="location" type="string" required="true" />
+		<cfargument name="library" type="string" required="true" />
+		
+		<cfset var stResult = structnew() />
+		<cfset var st = application.fc.autodoc.types.st />
+		
+		<cfif structkeyexists(st[arguments.location],arguments.library)>
+			<cfset stResult.name = arguments.library />
+			<cfset stResult.label = arguments.library />
+			<cfset stResult.readme = st[arguments.location][arguments.library].readme />
+			<cfset stResult.bDeprecated = st[arguments.location][arguments.library].bDeprecated />
+			<cfset stResult.children = getItems(arguments.location,arguments.library) />
+		</cfif>
+		
+		<cfreturn stResult />
+	</cffunction>
+	
+	<cffunction name="getItems" returntype="query" output="false" access="public" hint="Get the items for a library">
+		<cfargument name="location" type="string" required="true" />
+		<cfargument name="library" type="string" required="true" />
+		
+		<cfset var qResult = querynew("empty") />
+		<cfset var q = getTypeQuery() />
+		
+		<cfif structkeyexists(application.fc.autodoc.types.st[arguments.location],arguments.library)>
+			<cfquery dbtype="query" name="qResult">
+				select *, typename as name, displayname as label from q where location='#arguments.location#' and package='#arguments.library#' and bDocument=1
+			</cfquery>
+		</cfif>
+		
+		<cfreturn qResult />
+	</cffunction>
+	
+	<cffunction name="getItem" returntype="struct" output="false" access="public" hint="Alias for getTag">
+		
+		<cfreturn getType(argumentCollection=arguments) />
+	</cffunction>
+	
+	<cffunction name="getLabel">
+		<cfargument name="type" type="string" required="true" />
+		
+		<cfswitch expression="#arguments.type#">
+			<cfcase value="itemsingle">
+				<cfreturn "Type" />
+			</cfcase>
+			<cfcase value="itemplural">
+				<cfreturn "COAPI Types" />
+			</cfcase>
+			<cfcase value="librarysingle">
+				<cfreturn "Package" />
+			</cfcase>
+			<cfcase value="libraryplural">
+				<cfreturn "COAPI Packages" />
+			</cfcase>
+			<cfcase value="childsingle">
+				<cfreturn "Content Type" />
+			</cfcase>
+			<cfcase value="childplural">
+				<cfreturn "Content Types" />
+			</cfcase>
+		</cfswitch>
 	</cffunction>
 	
 </cfcomponent>

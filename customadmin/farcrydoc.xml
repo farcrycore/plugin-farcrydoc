@@ -17,6 +17,7 @@
 				<menuitem mergeType="merge" sequence="40" id="farcrydocformtools" label="Formtools" link="/admin/customadmin.cfm?module=autodocs/formtools.cfm&amp;plugin=farcrydoc" />
 				<menuitem mergeType="merge" sequence="50" id="xmlexport" label="XML Export" link="/admin/customadmin.cfm?module=autodocs/xml.cfm&amp;plugin=farcrydoc" />
 				<menuitem mergeType="merge" sequence="60" id="cfedictionary" label="CFEclipse Dictionary" link="/admin/customadmin.cfm?module=autodocs/cfe.cfm&amp;plugin=farcrydoc" />
+				<menuitem mergeType="merge" sequence="70" id="autogenerate" label="Generate Static Documentation" link="/admin/customadmin.cfm?module=autodocs/staticdocs.cfm&amp;plugin=farcrydoc" />
 			</menu>
 		</subsection>
 	</section>

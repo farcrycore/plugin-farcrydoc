@@ -125,7 +125,7 @@
 		<cfif structkeyexists(arguments.stMetadata,"bDocument")>
 			<cfset stResult.bDocument = arguments.stMetadata.bDocument />
 		<cfelse>
-			<cfset stResult.bDocument = false />
+			<cfset stResult.bDocument = true />
 		</cfif>
 		
 		<!--- Deprecated? --->
@@ -254,6 +254,19 @@
 				<cfset stResult[library].taglib = "#arguments.packagepath#/#library#" />
 				<cfset stResult[library].prefix = getPrefix(library=library,stPrefixes=arguments.stPrefixes) />
 				
+				<!--- Library blurb --->
+				<cfif fileexists("#qResult.directory[currentrow]#/#qResult.name[currentrow]#/readme.html")>
+					<cffile action="read" file="#qResult.directory[currentrow]#/#qResult.name[currentrow]#/readme.html" variable="stResult.#library#.readme" />
+					<cfif find("deprecated",stResult[library].readme)>
+						<cfset stResult[library].bDeprecated = true />
+					<cfelse>
+						<cfset stResult[library].bDeprecated = false />
+					</cfif>
+				<cfelse>
+					<cfset stResult[library].readme = "" />
+					<cfset stResult[library].bDeprecated = false />
+				</cfif>
+				
 				<cfset stResult[library].tags[listfirst(qResult.name[currentrow],".")] = scrapeTag(name=listfirst(qResult.name[currentrow],"."),source=content) />
 			<cfelseif listlast(qResult.directory[currentrow],"/\") eq "tags">
 				<cffile action="read" file="#qResult.directory[currentrow]#/#qResult.name[currentrow]#" variable="content" />
@@ -268,6 +281,19 @@
 				<cfset stResult[library].library = library />
 				<cfset stResult[library].taglib = arguments.packagepath />
 				<cfset stResult[library].prefix = getPrefix(library=library,stPrefixes=arguments.stPrefixes) />
+				
+				<!--- Library blurb --->
+				<cfif fileexists("#qResult.directory[currentrow]#/#qResult.name[currentrow]#/readme.html")>
+					<cffile action="read" file="#qResult.directory[currentrow]#/#qResult.name[currentrow]#/readme.html" variable="stResult.#library#.readme" />
+					<cfif find("deprecated",stResult[library].readme)>
+						<cfset stResult[library].bDeprecated = true />
+					<cfelse>
+						<cfset stResult[library].bDeprecated = false />
+					</cfif>
+				<cfelse>
+					<cfset stResult[library].readme = "" />
+					<cfset stResult[library].bDeprecated = false />
+				</cfif>
 				
 				<cfset stResult[library].tags[listfirst(qResult.name[currentrow],".")] = scrapeTag(name=listfirst(qResult.name[currentrow],"."),source=content) />
 			</cfif>
