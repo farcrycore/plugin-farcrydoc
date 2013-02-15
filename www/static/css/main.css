@@ -375,3 +375,18 @@ ol.linenums li {
   border-radius:4px 4px 0 0;
 }
 td pre.prettyprint { margin-bottom:0; }
+
+/*** site search ***/
+#google-site-search .gsc-control-cse {
+	padding:0;
+	background: transparent;
+	border: 0 none;
+}
+#google-site-search .gsc-input-box {
+	background-color:transparent;
+	border:0 none;
+}
+#google-site-search input.gsc-search-button {
+	position:relative;
+	top:5px;
+}

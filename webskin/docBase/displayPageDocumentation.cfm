@@ -73,6 +73,31 @@
 	            <li<cfif stLocal.section eq "formtool"> class="active"</cfif>><a href="#getURL('formtool')#">Formtools</a></li>
 	          </ul><!-- /.nav -->
 	        </div><!-- /.nav-collapse -->
+	        <div id="google-site-search" class="nav-collapse collapse pull-right span4">
+				<script>
+					(function() {
+						if (window.location.host === "docs.farcrycore.org"){
+							var cx = '015935794000702335563:5nwf36h7b7e';
+							var gcse = document.createElement('script'); gcse.type = 'text/javascript';
+							gcse.async = true;
+							gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
+								'//www.google.com/cse/cse.js?cx=' + cx;
+							var s = document.getElementsByTagName('script')[0];
+							s.parentNode.insertBefore(gcse, s);
+							
+							function updateInputHeight(){
+								var input = $("##google-site-search .gsc-input");
+								if (input.size())
+									input.css("height","30px");
+								else
+									setTimeout(updateInputHeight,200);
+							}
+							updateInputHeight();
+						}
+					})();
+				</script>
+				<gcse:search style="height:85px;"></gcse:search>
+			</div>
 	      </div><!-- /.container-fluid -->
 	    </div><!-- /.navbar-inner -->
 	  </div><!-- /.navbar .navbar-fixed-top .navbar-inverse -->

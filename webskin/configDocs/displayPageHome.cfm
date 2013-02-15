@@ -11,6 +11,7 @@
 	  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 	  <title>#application.config.docs.title# Documentation</title>
 	  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:400,300,700">
+	  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
 	  <cfif isdefined("url.version") and url.version eq "public">
 		  <cfset request.fc.bShowTray = false />
 		  <cfimport taglib="/farcry/core/tags/webskin" prefix="skin" />
@@ -40,6 +41,31 @@
 	            <li><a href="#oTag.getURL('formtool')#">Formtools</a></li>
 	          </ul><!-- /.nav -->
 	        </div><!-- /.nav-collapse -->
+	        <div id="google-site-search" class="nav-collapse collapse pull-right span4">
+				<script>
+					(function() {
+						if (window.location.host === "docs.farcrycore.org"){
+							var cx = '015935794000702335563:5nwf36h7b7e';
+							var gcse = document.createElement('script'); gcse.type = 'text/javascript';
+							gcse.async = true;
+							gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
+								'//www.google.com/cse/cse.js?cx=' + cx;
+							var s = document.getElementsByTagName('script')[0];
+							s.parentNode.insertBefore(gcse, s);
+							
+							function updateInputHeight(){
+								var input = $("##google-site-search .gsc-input");
+								if (input.size())
+									input.css("height","30px");
+								else
+									setTimeout(updateInputHeight,200);
+							}
+							updateInputHeight();
+						}
+					})();
+				</script>
+				<gcse:search></gcse:search>
+			</div>
 	      </div><!-- /.container-fluid -->
 	    </div><!-- /.navbar-inner -->
 	  </div><!-- /.navbar .navbar-fixed-top .navbar-inverse -->
